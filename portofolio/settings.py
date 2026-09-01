@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-6t6&&go9kdz8m0bf0_f84kx&h@+v7q3u-z*mt0-!((r1izggkx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "https://pws.cs.ui.ac.id/syabil.wafi/portfolio"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "https://syabil-wafi-portfolio.pws.cs.ui.ac.id"]
 
 
 # Application definition
