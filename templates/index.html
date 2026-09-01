@@ -1,61 +1,137 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burhan - Portfolio</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Syabil Wafi | Full-Stack Developer</title>
+    <link rel="stylesheet" href="static/css/style.css">
 </head>
 <body>
-    <header class="site-header">
-        <div class="container">
-            <a href="#profile" class="brand">Burhan</a>
-            <nav>
-                <a href="#profile">Profile</a>
-            </nav>
+<div class="crt-scanlines"></div>
+<div class="crt-vignette"></div>
+<div class="crt-flicker"></div>
+<nav class="navbar">
+    <span class="nav-logo">SYBLWF</span>
+    <ul class="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#contact">Contact</a></li>
+    </ul>
+</nav>
+<main>
+    <section class="hero">
+        <img class="sprite-hero sprite-alien-ship-top" src="static/img/sprites/alien-ship.svg" alt="Alien Ship Sprite">
+        <img class="sprite-hero sprite-alien-top-right" src="static/img/sprites/alien-sprite.svg" alt="Alien Sprite">
+        <img class="sprite-hero sprite-alien-bottom-left" src="static/img/sprites/alien-sprite.svg" alt="Alien Sprite">
+        <img class="sprite-hero sprite-ship-bottom" src="static/img/sprites/ship.svg" alt="Ship Sprite">
+        <div class="hero-content">
+            <p class="hero-prompt">
+                <span class="prompt-caret">&gt;</span>
+                <span class="hero-title">Syabil Wafi</span><span class="cursor">_</span>
+            </p>
+            <p class="hero-subtitle">Software Engineer</p>
+            <div class="hero-buttons">
+                <a href="" class="btn btn-filled">View my Work</a>
+                <a href="" class="btn btn-outline">Get In Touch</a>
+            </div>
         </div>
-    </header>
+    </section>
 
-    <main>
-        <section class="hero" id="profile">
-            <div class="container hero-grid">
-                <div class="hero-identity">
-                    <p class="hero-kicker">Computer Science &middot; Universitas Indonesia</p>
-                    <h1>Burhan</h1>
+    <section id="about" class="about">
+        <div class="section-container">
+            <h1 class="section-title">About me</h1>
+            <div class="about-content">
+                <p>Computer Science undergraduate at University of Indonesia with experience in data science, operations, and leadership. I've worked on web-based projects, focusing on front-end development and UI/UX, while also contributed to startup operations and actively participating in organizations. I'm continuously developing my skills in programming and problem-solving, and I'm eager to contribute to impactful projects, grow as a technologist, and collaborate with others to create meaningful solutions.</p>
+                <div class="photo-frame">
+                    <img id="profile-picture" src="static/img/profile.png" alt="Profile Picture">
                 </div>
-                <div class="hero-photo">
-                    <div class="photo-block"></div>
-                    <img class="avatar" src="/static/img/burhan.png" alt="Photo of Burhan">
+            </div>
+
+            <div class="main-display-area">
+                <div class="experience terminal-window">
+                    <div class="window-header">
+                        <span class="window-title">EXPERIENCES</span>
+                    </div>
+                    <div class="window-body">
+                        <div class="exp-group"
+                             data-org="BEM FASILKOM UI"
+                             data-logo="static/img/logo/bem-fasilkom-ui-logo.webp"
+                             data-list-1="mpruy"
+                             data-list-2="mpruy">
+                            <div class="exp-row">
+                                <span class="organization">BEM FASILKOM UI</span>
+                                <span class="date">Jul 2026 - Present</span>
+                            </div>
+                            <div class="role-row">
+                                <p class="role">Staff of Business and Partnership Bureau</p>
+                            </div>
+                            <div class="exp-row secondary-date-row">
+                                <span class="date">Sep 2025 - Nov 2025</span>
+                            </div>
+                            <div class="role-row">
+                                <p class="role">Intern at Department of Arts and Culture</p>
+                            </div>
+                        </div>
+
+                        <div class="exp-group"
+                             data-org="COMPFEST 18"
+                             data-logo="static/img/logo/compfest-logo.webp"
+                             data-list-1="mpruy">
+                            <div class="exp-row">
+                                <span class="organization">COMPFEST 18</span>
+                                <span class="date">Jan 2026 - Present</span>
+                            </div>
+                            <div class="role-row">
+                                <p class="role">Vice Person in Charge of Equipment & Security</p>
+                            </div>
+                        </div>
+
+                        <div class="exp-group"
+                             data-org="KATOU.co"
+                             data-logo="static/img/logo/katou-logo.webp"
+                             data-list-1="mpruy">
+                            <div class="exp-row">
+                                <span class="organization">KATOU.co</span>
+                                <span class="date">Mar 2024 - Dec 2024</span>
+                            </div>
+                            <div class="role-row">
+                                <p class="role">Chief Operations Officer</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="hero-details">
-                    <p class="bio">CS student at Universitas Indonesia for longer than planned, now a familiar (and slightly dreaded) face among Fasilkom students as a teaching assistant across several courses.</p>
-                    <dl class="meta-list">
-                        <div class="meta-row">
-                            <dt>NPM</dt>
-                            <dd>2206000000</dd>
+
+                <div class="terminal-modal-overlay static-modal" id="detailModal">
+                    <div class="experience-detail-window terminal-window">
+                        <div class="window-header">
+                            <span class="window-title" id="modalTitle">BEM FASILKOM UI</span>
+                            <span class="window-close" id="closeModalBtn">X</span>
                         </div>
-                        <div class="meta-row">
-                            <dt>Program</dt>
-                            <dd>S1 Ilmu Komputer</dd>
+                        <div class="modal-window-body">
+                            <div class="modal-left-column">
+                                <div class="photo-frame logo-frame">
+                                    <img id="modalLogo" src="static/img/logo/bem-fasilkom-ui-logo.webp" alt="Organization Logo">
+                                </div>
+                            </div>
+                            <div class="modal-right-column" id="modalDetailsContainer"></div>
                         </div>
-                    </dl>
-                    <div class="social-links">
-                        <a href="https://github.com/" class="social-link">GitHub</a>
-                        <a href="https://linkedin.com/" class="social-link">LinkedIn</a>
-                        <a href="mailto:burhan@example.com" class="social-link">Email</a>
                     </div>
                 </div>
             </div>
-        </section>
-    </main>
-
-    <footer class="site-footer">
-        <div class="container">
-            <p>&copy; 2026 Burhan. Fakultas Ilmu Komputer, Universitas Indonesia.</p>
         </div>
-    </footer>
+        <img class="sprite-about sprite-1" src="static/img/sprites/alien-sprite.svg" alt="Alien Sprite">
+        <img class="sprite-about sprite-2" src="static/img/sprites/alien-sprite.svg" alt="Alien Sprite">
+    </section>
+
+
+</main>
+<svg style="display: none;">
+    <defs>
+        <filter id="crt-warp">
+            <feTurbulence type="fractalNoise" baseFrequency="0.0001" numOctaves="1" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="20" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+    </defs>
+</svg>
 </body>
 </html>
