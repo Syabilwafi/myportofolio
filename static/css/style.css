@@ -9,6 +9,12 @@
     padding: 0;
 }
 
+a {
+  color: inherit;
+  text-decoration: inherit;
+  cursor: pointer;
+}
+
 /* Custom Properties & Variables */
 :root {
     --green-bright:   #B1F069;
@@ -264,16 +270,17 @@ body {
 
 .section-title {
     font-size: 1.5rem;
-    border: var(--green-bright) 3px solid;
     letter-spacing: 0.08em;
     padding: 0.6rem 2rem;
-    background-color: var(--green-dim);
-    box-shadow: var(--glow-md);
     margin-bottom: 4rem;
     text-transform: uppercase;
     animation: text-flicker 3s linear infinite;
     display: inline-block;
     align-self: center;
+    background: transparent;
+    color: var(--green-bright);
+    border: 2px solid var(--green-bright);
+    box-shadow: 0 0 10px var(--green-dim), inset 0 0 10px rgba(181, 245, 66, 0.04);
 }
 
 /* Sprites */
@@ -313,6 +320,11 @@ body {
 }
 
 /* Experiences Window */
+.experiences {
+    width: 100%;
+    display: flex;
+}
+
 .main-display-area {
     width: 100%;
     margin-top: 4rem;
@@ -401,73 +413,15 @@ body {
 .role-row { display: flex; }
 .role { font-size: 0.9rem; color: rgba(181, 245, 66, 0.75); }
 
-/* 
-   EXPERIENCE DESCRIPTION MODAL
-    */
-.terminal-modal-overlay.static-modal {
-    flex: 1 1 500px;
-    position: relative;
-    inset: auto;
-    z-index: 10;
-    background: transparent;
-    padding: 0;
-    display: none;
-    opacity: 1;
-    pointer-events: auto;
-}
-
-#detailModal {
-    flex: 1 1 500px;
-    position: relative;
-    inset: auto;
-    z-index: 10;
-    background: transparent;
-    padding: 0;
-    display: none;
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.experience-detail-window.terminal-window {
-    width: 100%;
-    box-shadow: var(--glow-md);
-}
-
-.window-close {
-    font-weight: 700;
-    letter-spacing: 0.1em;
-}
-
-#closeModalBtn {
-    font-weight: 700;
-    letter-spacing: 0.1em;
-}
-
-#modalTitle {
-    font-weight: 700;
-    letter-spacing: 0.1em;
-}
-
-.modal-window-body {
-    display: flex;
-    gap: 2.5rem;
-    padding: 2.5rem;
-    align-items: flex-start;
-}
-
-.modal-left-column { flex: 0 0 auto; display: flex; justify-content: center; }
-.logo-frame { --b: 3px; --w: 16px; filter: drop-shadow(0 0 12px var(--green-mid)); }
-.logo-frame img { padding: 0.8rem; width: 140px; height: 140px; object-fit: contain; }
-
-#modalLogo {
-    padding: 0.8rem;
-    width: 140px;
-    height: 140px;
-    object-fit: contain;
-}
-
-.modal-right-column { flex: 1 1 auto; display: flex; flex-direction: column; gap: 1.8rem; }
-#modalDetailsContainer { flex: 1 1 auto; display: flex; flex-direction: column; gap: 1.8rem; }
+/* Social Contacts */
+.contact-social {display: flex; justify-content: center; align-items: center; margin-bottom: 4rem;}
+.contact-social { flex: 0 0 400px; display: flex; flex-direction: column; gap: 2.5rem; padding-top: 1rem; }
+.contact-social h2 { font-size: 1.5rem; letter-spacing: 0.05em; color: var(--green-bright); text-shadow: var(--glow-md); }
+.social-list { display: flex; gap: 2rem; }
+.social-item { display: flex; align-items: center; gap: 1.5rem; }
+.social-icon { width: 36px; height: 36px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 0 4px var(--green-glow)); }
+.social-text { font-size: 1.1rem; color: var(--green-bright); text-shadow: 0 0 4px rgba(126, 203, 32, 0.4); }
+.social-item:hover .social-text:hover { text-shadow: var(--glow-md); transition: text-shadow 0.3s }
 
 /* Utilities */
 ::-webkit-scrollbar { width: 12px; }
@@ -499,6 +453,8 @@ body {
     .about-content { justify-content: center; gap: 1.5rem; }
     .about-content p { flex: 1 1 100%; margin-top: 1rem; }
     .photo-frame {max-width: 80%;}
+    .social-item {  gap: 0.4rem; }
+    .social-list { display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center; }
 }
 
 @media (max-width: 680px) {
@@ -514,4 +470,5 @@ body {
     .modal-window-body { flex-direction: column; align-items: center; gap: 1.5rem; padding: 1.5rem; }
     .modal-right-column { width: 100%; }
     .logo-frame img { width: 100px; height: 100px; }
+    .social-list { display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center; flex-direction: column; }
 }
