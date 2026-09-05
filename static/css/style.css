@@ -512,7 +512,7 @@ body {
     .sprite-about { display: none !important; }
     body { scrollbar-width: none; -ms-overflow-style: none; }
     body::-webkit-scrollbar { display: none; }
-    .navbar { margin: 14px 16px 0; padding: 12px 20px; border-radius: 40px; }
+    .navbar { margin: 14px 16px 0; padding: 12px 20px;}
     .nav-links { gap: 24px; }
     .hero-content { gap: 32px; }
     .hero-buttons { gap: 20px; }
