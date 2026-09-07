@@ -28,7 +28,7 @@ python -m venv env
 
 - Aktifkan environment virtual
 ```bash
-source env/bin/activate 
+env/bin/activate 
 ```
 
 - Install dependencies pada `requirements.txt` 
