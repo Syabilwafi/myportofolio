@@ -1,4 +1,4 @@
-## Portofolio Pribadi - Tugas Individu PBP
+# Portofolio Pribadi - Tugas Individu PBP
 
 Nama : Syabil Wafi Ahdi
 
@@ -6,8 +6,49 @@ NPM : 2506657371
 
 Kelas : PBP B
 
+## Setup
+
 ---
-### Tugas 1
+
+### Prerequisites
+- Python 3.12+
+- Git
+- Any IDE
+
+### Installation
+- Clone repository ini pada terminal
+```bash
+git clone https://github.com/Syabilwafi/myportofolio.git
+```
+
+- Buat environment virtual 
+```bash
+python -m venv env
+```
+
+- Aktifkan environment virtual
+```bash
+source env/bin/activate 
+```
+
+- Install dependencies pada `requirements.txt` 
+```bash
+pip install -r requirements.txt
+```
+
+- Jalankan Django's check dan migrasi database
+```bash
+python manage.py check
+python manage.py migrate
+```
+
+- Jalankan server development
+```bash
+python manage.py runserver
+```
+## Tugas 1
+
+---
 
 1. Saya menggunakan elemen semantik seperti `<nav>`, `<header>`, `<main>`, dan `<section>` untuk memisahkan bagian-bagian utama halaman web. Dengan elemen semantik ini, 
 penggunaan CSS dapat lebih mudah diterapkan karena bagian bagian tersebut sudah terpisah.
