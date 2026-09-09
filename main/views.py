@@ -6,7 +6,7 @@ def show_main(request):
     experiences = Experience.objects.all().order_by('-started_at')
 
     context = {
-        "name": "Syabil",
+        "name": "Syabil Wafi",
         "npm": "2506657371",
         "class": "PBP-B",
         "bio": (
