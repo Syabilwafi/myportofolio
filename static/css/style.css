@@ -446,7 +446,6 @@ body {
     min-height: 380px;
 }
 
-/* Left Sidebar */
 .project-sidebar {
     flex: 0 0 240px;
     display: flex;
@@ -454,6 +453,10 @@ body {
     gap: 0.6rem;
     border-right: 1px solid rgba(181, 245, 66, 0.2);
     padding-right: 1.5rem;
+}
+
+.project-sidebar:has(.no-projects) {
+    border-right: none;
 }
 
 .project-tab-btn {
@@ -478,7 +481,6 @@ body {
     text-shadow: var(--glow-sm);
 }
 
-/* Right Display Area */
 .project-display {
     flex: 1;
     display: flex;
@@ -496,23 +498,15 @@ body {
     padding: 0.5rem;
 }
 
-.project-screenshot {
-    width: 100%;
-    max-width: 720px;
-    display: block;
-    object-fit: cover;
-    padding: 1rem;
-}
-
 .preview-frame {
     --b: 0.4rem;
     --w: 2rem;
     --c: var(--green-bright);
-    display: inline-block;
-    flex: 0 0 auto;
-    max-width: 100%;
+    display: block;
+    width: 100%;
+    max-width: 920px;
     filter: drop-shadow(0 0 8px var(--green-glow));
-    padding: var(--b);
+    padding: 1rem;
     background: linear-gradient(to right, var(--c) var(--b), transparent 0) 0 0,
     linear-gradient(to bottom, var(--c) var(--b), transparent 0) 0 0,
     linear-gradient(to left, var(--c) var(--b), transparent 0) 100% 0,
@@ -523,6 +517,13 @@ body {
     linear-gradient(to top, var(--c) var(--b), transparent 0) 100% 100%;
     background-size: var(--w) var(--w);
     background-repeat: no-repeat;
+}
+
+.project-iframe {
+    width: 100%;
+    height: 420px;
+    display: block;
+    border: none;
 }
 
 .project-info {
@@ -536,7 +537,7 @@ body {
 }
 
 .project-title-link h3 {
-    font-size: 1.2rem;
+    font-size: 2.4rem;
     color: var(--green-bright);
     text-shadow: var(--glow-sm);
     transition: text-shadow 0.2s;
@@ -604,6 +605,7 @@ body {
         padding: 1rem;
         gap: 1.5rem;
     }
+
     .project-sidebar {
         flex: 1 1 100%;
         width: 100%;
@@ -611,6 +613,25 @@ body {
         border-bottom: 1px solid rgba(181, 245, 66, 0.2);
         padding-right: 0;
         padding-bottom: 1rem;
+        flex-direction: row;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .project-sidebar:has(.no-projects) {
+        border-bottom: none;
+    }
+
+    .project-tab-btn {
+        flex: 0 0 auto;
+    }
+
+    .project-iframe {
+        height: 320px;
+    }
+
+    .project-title-link h3 {
+        font-size: 1.8rem;
     }
 }
 
@@ -644,4 +665,20 @@ body {
     .modal-right-column { width: 100%; }
     .logo-frame img { width: 100px; height: 100px; }
     .social-list { display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center; flex-direction: column; }
+
+    .projects {
+        padding: 2rem 1rem;
+    }
+
+    .preview-frame {
+        padding: 0.5rem;
+    }
+
+    .project-iframe {
+        height: 240px;
+    }
+
+    .project-title-link h3 {
+        font-size: 1.4rem;
+    }
 }

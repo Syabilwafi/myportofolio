@@ -39,7 +39,6 @@ class Project(models.Model):
     name = models.CharField(max_length=255)
     url = models.URLField(blank=True, null=True)
     description = models.TextField(blank=True)
-    thumbnail = models.URLField(blank=True, null=True)
 
     class Meta:
         ordering = ['name']

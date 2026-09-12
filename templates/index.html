@@ -104,13 +104,11 @@
             <div class="section-container">
                 <h1 class="section-title">Projects</h1>
                 <div class="projects-content">
-
                     <div class="project-sidebar">
                         {% for project in projects %}
                             <button class="project-tab-btn {% if forloop.first %}active{% endif %}"
                                     data-name="{{ project.name }}"
-                                    data-url="{{ project.url }}"
-                                    data-image="{{ project.image.url|default:'/static/img/project-screenshot/bemconnect.webp' }}"
+                                    data-url="{{ project.url|default:'https://example.com' }}"
                                     data-description="{{ project.description }}">
                                 &gt; {{ project.name }}
                             </button>
@@ -123,12 +121,14 @@
                         {% if projects %}
                             {% with first_project=projects|first %}
                                 <div class="project-card">
-                                    <div class="preview-frame" >
-                                    <img id="active-project-img"
-                                         class="project-screenshot"
-                                         src="{{ first_project.image.url|default:'/static/img/project-screenshot/bemconnect.webp' }}"
-                                         alt="{{ first_project.name }}">
-                                        </div>
+
+                                    <div class="preview-frame">
+                                        <iframe id="active-project-frame"
+                                                class="project-iframe"
+                                                src="{{ first_project.url|default:'https://example.com' }}"
+                                                title="{{ first_project.name }}">
+                                        </iframe>
+                                    </div>
                                 </div>
                                 <div class="project-info">
                                     <a id="active-project-link" href="{{ first_project.url }}" target="_blank" rel="noopener noreferrer" class="project-title-link">
@@ -187,7 +187,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
     const tabButtons = document.querySelectorAll('.project-tab-btn');
-    const activeImg = document.getElementById('active-project-img');
+    const activeFrame = document.getElementById('active-project-frame');
     const activeTitle = document.getElementById('active-project-title');
     const activeLink = document.getElementById('active-project-link');
     const activeDesc = document.getElementById('active-project-desc');
@@ -195,13 +195,12 @@
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
             tabButtons.forEach(btn => btn.classList.remove('active'));
-
             button.classList.add('active');
 
             activeTitle.textContent = button.dataset.name;
             activeLink.href = button.dataset.url;
-            activeImg.src = button.dataset.image;
-            activeImg.alt = button.dataset.name;
+            activeFrame.src = button.dataset.url;
+            activeFrame.title = button.dataset.name;
             activeDesc.textContent = button.dataset.description;
         });
     });
