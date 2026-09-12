@@ -58,37 +58,39 @@
                 </div>
 
                 <section id="experiences" class="experiences">
-                    <div class="main-display-area">
-                        <div class="experience terminal-window">
-                            <div class="window-header">
-                                <span class="window-title">EXPERIENCES</span>
-                            </div>
-                            <div class="window-body">
-                                {% for exp in experiences %}
-                                    <div class="exp-group">
-                                        <div class="exp-row">
-                                            <span class="organization">{{ exp.title }}</span>
-                                            <span class="date">
-                                                {{ exp.started_at|date:"M Y" }} -
-                                                {% if exp.is_ongoing %}
-                                                    Present
-                                                {% else %}
-                                                    {{ exp.ended_at|date:"M Y" }}
-                                                {% endif %}
-                                            </span>
+                    <div class="section-container">
+                        <div class="main-display-area">
+                            <div class="experience terminal-window">
+                                <div class="window-header">
+                                    <span class="window-title">EXPERIENCES</span>
+                                </div>
+                                <div class="window-body">
+                                    {% for exp in experiences %}
+                                        <div class="exp-group">
+                                            <div class="exp-row">
+                                                <span class="organization">{{ exp.title }}</span>
+                                                <span class="date">
+                                                    {{ exp.started_at|date:"M Y" }} -
+                                                    {% if exp.is_ongoing %}
+                                                        Present
+                                                    {% else %}
+                                                        {{ exp.ended_at|date:"M Y" }}
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                            <div class="role-row">
+                                                <p class="role">{{ exp.get_category_display }}</p>
+                                            </div>
+                                            <div class="description-row">
+                                                <p class="description">{{ exp.description }}</p>
+                                            </div>
                                         </div>
-                                        <div class="role-row">
-                                            <p class="role">{{ exp.get_category_display }}</p>
+                                    {% empty %}
+                                        <div class="exp-group">
+                                            <p class="role">No experiences found.</p>
                                         </div>
-                                        <div class="description-row">
-                                            <p class="description">{{ exp.description }}</p>
-                                        </div>
-                                    </div>
-                                {% empty %}
-                                    <div class="exp-group">
-                                        <p class="role">No experiences found.</p>
-                                    </div>
-                                {% endfor %}
+                                    {% endfor %}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -96,6 +98,51 @@
             </div>
             <img class="sprite-about sprite-1" src="/static/img/sprites/alien-sprite.svg" alt="Alien Sprite">
             <img class="sprite-about sprite-2" src="/static/img/sprites/alien-sprite.svg" alt="Alien Sprite">
+        </section>
+
+        <section id="projects" class="projects">
+            <div class="section-container">
+                <h1 class="section-title">Projects</h1>
+                <div class="projects-content">
+
+                    <div class="project-sidebar">
+                        {% for project in projects %}
+                            <button class="project-tab-btn {% if forloop.first %}active{% endif %}"
+                                    data-name="{{ project.name }}"
+                                    data-url="{{ project.url }}"
+                                    data-image="{{ project.image.url|default:'/static/img/project-screenshot/bemconnect.webp' }}"
+                                    data-description="{{ project.description }}">
+                                &gt; {{ project.name }}
+                            </button>
+                        {% empty %}
+                            <p class="no-projects">No projects available.</p>
+                        {% endfor %}
+                    </div>
+
+                    <div class="project-display">
+                        {% if projects %}
+                            {% with first_project=projects|first %}
+                                <div class="project-card">
+                                    <div class="preview-frame" >
+                                    <img id="active-project-img"
+                                         class="project-screenshot"
+                                         src="{{ first_project.image.url|default:'/static/img/project-screenshot/bemconnect.webp' }}"
+                                         alt="{{ first_project.name }}">
+                                        </div>
+                                </div>
+                                <div class="project-info">
+                                    <a id="active-project-link" href="{{ first_project.url }}" target="_blank" rel="noopener noreferrer" class="project-title-link">
+                                        <h3 id="active-project-title">{{ first_project.name }}</h3>
+                                    </a>
+                                    <p id="active-project-desc" class="project-description">{{ first_project.description }}</p>
+                                </div>
+                            {% endwith %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <img class="sprite-projects sprite-left" src="/static/img/sprites/ship.svg" alt="Ship Sprite">
+            <img class="sprite-projects sprite-right" src="/static/img/sprites/alien-ship.svg" alt="Alien Ship Sprite">
         </section>
 
         <section id="contact" class="contact-social">
@@ -137,6 +184,28 @@
         e.stopPropagation();
         navLinks.classList.toggle('active');
     })
+
+    document.addEventListener('DOMContentLoaded', () => {
+    const tabButtons = document.querySelectorAll('.project-tab-btn');
+    const activeImg = document.getElementById('active-project-img');
+    const activeTitle = document.getElementById('active-project-title');
+    const activeLink = document.getElementById('active-project-link');
+    const activeDesc = document.getElementById('active-project-desc');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+
+            button.classList.add('active');
+
+            activeTitle.textContent = button.dataset.name;
+            activeLink.href = button.dataset.url;
+            activeImg.src = button.dataset.image;
+            activeImg.alt = button.dataset.name;
+            activeDesc.textContent = button.dataset.description;
+        });
+    });
+});
 </script>
 </body>
 </html>

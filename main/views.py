@@ -1,9 +1,10 @@
 from django.shortcuts import render
-from main.models import Experience
+from main.models import Experience, Project
 
 
 def show_main(request):
     experiences = Experience.objects.all().order_by('-started_at')
+    projects = Project.objects.all().order_by('name')
 
     context = {
         "name": "Syabil Wafi",
@@ -15,5 +16,6 @@ def show_main(request):
             "developing my skills in programming and problem-solving, and I'm eager to contribute to impactful projects, grow as a technologist, and collaborate with others to create meaningful solutions."
         ),
         "experiences": experiences,
+        "projects": projects,
     }
     return render(request, "index.html", context)
