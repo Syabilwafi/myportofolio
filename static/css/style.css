@@ -469,8 +469,15 @@ body {
     padding-right: 1.5rem;
 }
 
+.projects-content:has(.no-projects) {
+    gap: 0;
+}
+
 .project-sidebar:has(.no-projects) {
     border-right: none;
+    display: flex;
+    padding: 0;
+    align-items: center;
 }
 
 .project-tab-btn {
@@ -503,6 +510,9 @@ body {
     justify-content: center;
 }
 
+.project-display:has(.no-projects) {
+    display: none;
+}
 .project-card {
     display: flex;
     justify-content: center;
