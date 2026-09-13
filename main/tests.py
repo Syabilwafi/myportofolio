@@ -2,7 +2,7 @@ from datetime import date
 from django.test import TestCase
 from django.urls import reverse
 
-from main.models import Experience
+from main.models import Experience, Project
 
 
 class MainTest(TestCase):
@@ -14,6 +14,12 @@ class MainTest(TestCase):
             category="internship",
             started_at=date(2024, 1, 1),
             ended_at=None,
+        )
+
+        self.project = Project.objects.create(
+            name="Portfolio Website",
+            description="Project Description",
+            url="https://example.com",
         )
 
     def test_main_url_is_accessible(self):
@@ -58,3 +64,25 @@ class MainTest(TestCase):
         response = self.client.get(reverse("main:show_main"))
         self.assertContains(response, "Jun 2024")
         self.assertNotContains(response, "Present")
+
+    def test_project_url_is_accessible_and_uses_correct_template(self):
+        response = self.client.get(reverse("main:show_main"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "index.html")
+
+    def test_project_model_data_renders_correctly(self):
+        self.assertEqual(str(self.project), "Portfolio Website")
+
+        response = self.client.get(reverse("main:show_main"))
+        self.assertContains(response, self.project.name)
+        self.assertContains(response, self.project.description)
+        self.assertContains(response, self.project.url)
+
+    def test_empty_projects_state(self):
+        Project.objects.all().delete()
+        response = self.client.get(reverse("main:show_main"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "No projects available.")
+        self.assertNotContains(response, "project-card")
