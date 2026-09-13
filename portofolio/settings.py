@@ -36,6 +36,9 @@ ALLOWED_HOSTS = [
     "syabil-wafi-portfolio.pws.cs.ui.ac.id"
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://syabil-wafi-portfolio.pws.cs.ui.ac.id",
+]
 
 # Application definition
 
