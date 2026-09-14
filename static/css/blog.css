@@ -1,0 +1,223 @@
+
+main.blog {
+    justify-content: flex-start;
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+}
+
+.post {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0 1.5rem;
+}
+
+.blog-window {
+    width: 100%;
+    max-width: 1000px;
+    background-color: rgba(13, 26, 10, 0.95);
+    border: 2px solid var(--green-bright);
+    box-shadow: 0 0 15px rgba(126, 203, 32, 0.2);
+    display: flex;
+    flex-direction: column;
+}
+
+.window-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--bg-dark);
+    font-family: var(--font-pixel), sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.blog-body {
+    display: flex;
+    min-height: 520px;
+}
+
+.blog-content {
+    flex: 1;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    border-right: 2px solid var(--green-bright);
+}
+
+.post-title {
+    font-size: 1.6rem;
+    color: var(--green-bright);
+    margin-bottom: 1.5rem;
+    text-shadow: var(--glow-sm);
+}
+
+.post-text {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--green-glow);
+    margin-bottom: 1.2rem;
+}
+
+.comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin-top: 1rem;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+}
+
+.retro-input,
+.retro-textarea {
+    width: 100%;
+    max-width: 400px;
+    background: transparent;
+    border: 1px solid var(--green-bright);
+    color: var(--green-bright);
+    font-family: var(--font-pixel), sans-serif;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+    outline: none;
+    box-shadow: inset 0 0 5px rgba(181, 245, 66, 0.1);
+}
+
+.retro-textarea {
+    max-width: 100%;
+    resize: vertical;
+}
+
+.retro-input::placeholder,
+.retro-textarea::placeholder {
+    color: rgba(181, 245, 66, 0.5);
+}
+
+.retro-input:focus,
+.retro-textarea:focus {
+    box-shadow: 0 0 8px rgba(126, 203, 32, 0.4), inset 0 0 8px rgba(181, 245, 66, 0.15);
+}
+
+.input-hint {
+    font-size: 0.7rem;
+    color: rgba(181, 245, 66, 0.6);
+}
+
+.comment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.comment-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    border-bottom: 1px solid rgba(181, 245, 66, 0.25);
+    padding-bottom: 0.8rem;
+}
+
+.comment-author-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--green-bright);
+}
+
+.comment-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.comment-text {
+    font-size: 0.9rem;
+    color: var(--green-glow);
+}
+
+.comment-time {
+    font-size: 0.8rem;
+    color: rgba(181, 245, 66, 0.6);
+}
+
+.blog-sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background-color: rgba(8, 18, 6, 0.6);
+}
+
+.post-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.post-item {
+    border-bottom: 1px solid rgba(181, 245, 66, 0.25);
+}
+
+.post-item a {
+    display: block;
+    padding: 1rem 1.2rem;
+    font-size: 0.9rem;
+    color: var(--green-glow);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.post-item:hover a,
+.post-item.active a {
+    color: var(--bg-dark);
+    background-color: var(--green-bright);
+    font-weight: 700;
+}
+
+.sprite-blog {
+    position: absolute;
+    z-index: 1;
+    pointer-events: none;
+    image-rendering: crisp-edges;
+    filter: drop-shadow(0 0 10px var(--green-glow));
+    animation: float-around 4s ease-in-out infinite alternate, sprite-flicker 40s linear infinite;
+    width: 50px;
+    height: auto;
+}
+
+.sprite-blog.sprite-left {
+    bottom: 5vh;
+    left: 2vw;
+    animation-delay: 0.5s;
+}
+
+.sprite-blog.sprite-right {
+    top: 20vh;
+    right: 3vw;
+    animation-delay: 1.2s;
+}
+
+@media (max-width: 850px) {
+    .blog-body {
+        flex-direction: column-reverse;
+    }
+
+    .blog-content {
+        border-right: none;
+    }
+
+    .blog-sidebar {
+        width: 100%;
+        border-bottom: 2px solid var(--green-bright);
+    }
+
+    .sprite-blog {
+        display: none;
+    }
+}
