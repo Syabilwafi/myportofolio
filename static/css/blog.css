@@ -1,4 +1,3 @@
-
 main.blog {
     justify-content: flex-start;
     padding-top: 2rem;
@@ -47,6 +46,7 @@ main.blog {
     flex-direction: column;
     gap: 2rem;
     border-right: 2px solid var(--green-bright);
+    word-break: break-word; /* Prevents long text/URLs from breaking layout */
 }
 
 .post-title {
@@ -75,6 +75,7 @@ main.blog {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.3rem;
+    width: 100%;
 }
 
 .retro-input,
@@ -136,6 +137,7 @@ main.blog {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 0.5rem;
 }
 
 .comment-text {
@@ -146,6 +148,7 @@ main.blog {
 .comment-time {
     font-size: 0.8rem;
     color: rgba(181, 245, 66, 0.6);
+    white-space: nowrap;
 }
 
 .blog-sidebar {
@@ -164,17 +167,25 @@ main.blog {
     border-bottom: 1px solid rgba(181, 245, 66, 0.25);
 }
 
-.post-item a {
+.post-item a,
+.post-item .post-tab {
     display: block;
+    width: 100%;
     padding: 1rem 1.2rem;
     font-size: 0.9rem;
     color: var(--green-glow);
     text-decoration: none;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .post-item:hover a,
-.post-item.active a {
+.post-item.active a,
+.post-item:hover .post-tab,
+.post-item.active .post-tab {
     color: var(--bg-dark);
     background-color: var(--green-bright);
     font-weight: 700;
@@ -204,20 +215,69 @@ main.blog {
 }
 
 @media (max-width: 850px) {
+    main.blog {
+        padding-top: 1rem;
+        padding-bottom: 2rem;
+    }
+
+    .post {
+        padding: 0 0.75rem;
+    }
+
     .blog-body {
         flex-direction: column-reverse;
+        min-height: auto;
     }
 
     .blog-content {
         border-right: none;
+        padding: 1.25rem;
+        gap: 1.5rem;
     }
 
     .blog-sidebar {
         width: 100%;
         border-bottom: 2px solid var(--green-bright);
+        max-height: 200px;
+        overflow-y: auto;
     }
 
     .sprite-blog {
         display: none;
+    }
+
+    .retro-input {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .blog-content {
+        padding: 1rem;
+    }
+
+    .post-title {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+
+    .post-text {
+        font-size: 0.88rem;
+        line-height: 1.6;
+    }
+
+    .comment-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .comment-time {
+        font-size: 0.75rem;
+    }
+
+    .post-item a,
+    .post-item .post-tab {
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
     }
 }
