@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Syabil Wafi | Full-Stack Developer</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/blog.css">
+</head>
+
+<body>
+    <div class="crt-scanlines"></div>
+    <div class="crt-vignette"></div>
+    <div class="crt-flicker"></div>
+
+    <nav class="navbar">
+        <span class="nav-logo">SYBLWF</span>
+        <button class="menu-toggle" id="menu-toggle">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M4 5C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20
+                5H4ZM7 12C7 11.4477 7.44772 11 8 11H20C20.5523 11 21 11.4477 21 12C21 12.5523 20.5523 13 20 13H8C7.44772 13 7 12.5523 7 12ZM13 18C13 17.4477 13.4477 17 14
+                17H20C20.5523 17 21 17.4477 21 18C21 18.5523 20.5523 19 20 19H14C13.4477 19 13 18.5523 13 18Z" fill="#7ecb20"></path>
+            </svg>
+        </button>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="/#about">About</a></li>
+            <li><a href="/blog">Blog</a></li>
+            <li><a href="/#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <main class="blog">
+        <section id="post" class="post">
+            <div class="section-container">
+                <div class="blog-window terminal-window">
+                    {% if posts %}
+                        {% with first_post=posts|first %}
+                        <div class="window-header">
+                            <span id="window-title" class="window-title">{{ first_post.title }}</span>
+                            <p class="window-close-btn" aria-label="Close">X</p>
+                        </div>
+                        {% endwith %}
+                    {% else %}
+                        <div class="window-header">
+                            <span class="window-title">BLOG</span>
+                            <p class="window-close-btn" aria-label="Close">X</p>
+                        </div>
+                    {% endif %}
+
+                    <div class="blog-body">
+                        {% if posts %}
+                            {% with first_post=posts|first %}
+                                <div class="blog-content">
+                                    <article class="post-article">
+                                        <p id="post-date" class="post-date">&gt; Posted on {{ first_post.created_at|date:"M d, Y" }}</p>
+                                        <div id="post-text" class="post-text">
+                                            {{ first_post.content|linebreaks }}
+                                        </div>
+                                    </article>
+                                </div>
+                            {% endwith %}
+                        {% else %}
+                            <div class="blog-content">
+                                <article class="post-article">
+                                    <p class="no-posts">&gt; Nothing has been posted yet.</p>
+                                </article>
+                            </div>
+                        {% endif %}
+
+                        <aside class="blog-sidebar">
+                            <ul class="post-list">
+                                {% for post in posts %}
+                                    <li class="post-item {% if forloop.first %}active{% endif %}">
+                                        <a href="#"
+                                           class="post-tab"
+                                           data-title="{{ post.title }}"
+                                           data-date="{{ post.created_at|date:'M d, Y' }}"
+                                           data-content="{{ post.content|linebreaks }}">
+                                            {{ post.title }}
+                                        </a>
+                                    </li>
+                                {% empty %}
+                                    <p class="no-posts">Nothing has been posted yet.</p>
+                                {% endfor %}
+                            </ul>
+                        </aside>
+                    </div>
+                </div>
+            </div>
+
+            <img class="sprite-blog sprite-left" src="/static/img/sprites/alien-sprite.svg" alt="Alien Sprite">
+            <img class="sprite-blog sprite-right" src="/static/img/sprites/alien-sprite.svg" alt="Alien Sprite">
+        </section>
+    </main>
+
+    <svg style="display: none;">
+        <defs>
+            <filter id="crt-warp">
+                <feTurbulence type="fractalNoise" baseFrequency="0.0001" numOctaves="1" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="20" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+        </defs>
+    </svg>
+
+    <script>
+        const menuToggle = document.getElementById("menu-toggle");
+        const navLinks = document.getElementById('nav-links');
+
+        menuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navLinks.classList.toggle('active');
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const postTabs = document.querySelectorAll('.post-tab');
+            const windowTitle = document.getElementById('window-title');
+            const postDate = document.getElementById('post-date');
+            const postText = document.getElementById('post-text');
+
+            postTabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    e.preventDefault();
+
+                    document.querySelectorAll('.post-item').forEach(item => item.classList.remove('active'));
+                    tab.parentElement.classList.add('active');
+
+                    const title = tab.dataset.title;
+                    const date = tab.dataset.date;
+                    const content = tab.dataset.content;
+
+                    if (windowTitle) windowTitle.textContent = title;
+                    if (postDate) postDate.textContent = `> Posted on ${date}`;
+                    if (postText) postText.innerHTML = content;
+                });
+            });
+        });
+    </script>
+</body>
+</html>
