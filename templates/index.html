@@ -1,39 +1,13 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ name }} | Full-Stack Developer</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-</head>
+{% extends 'base.html' %}
+{% load static %}
 
-<body>
-    <div class="crt-scanlines"></div>
-    <div class="crt-vignette"></div>
-    <div class="crt-flicker"></div>
-
-<nav class="navbar">
-        <span class="nav-logo">SYBLWF</span>
-        <button class="menu-toggle" id="menu-toggle">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M4 5C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20
-                5H4ZM7 12C7 11.4477 7.44772 11 8 11H20C20.5523 11 21 11.4477 21 12C21 12.5523 20.5523 13 20 13H8C7.44772 13 7 12.5523 7 12ZM13 18C13 17.4477 13.4477 17 14
-                17H20C20.5523 17 21 17.4477 21 18C21 18.5523 20.5523 19 20 19H14C13.4477 19 13 18.5523 13 18Z" fill="#7ecb20"></path>
-            </svg>
-        </button>
-        <ul class="nav-links" id="nav-links">
-            <li><a href="/#about">About</a></li>
-            <li><a href="/blog">Blog</a></li>
-            <li><a href="/#contact">Contact</a></li>
-        </ul>
-    </nav>
-
+{% block content %}
     <main>
         <section class="hero">
-            <img class="sprite-hero sprite-alien-ship-top" src="/static/img/sprites/alien-ship.svg" alt="Alien Ship Sprite">
-            <img class="sprite-hero sprite-alien-top-right" src="/static/img/sprites/alien-sprite.svg" alt="Alien Sprite">
-            <img class="sprite-hero sprite-alien-bottom-left" src="/static/img/sprites/alien-sprite.svg" alt="Alien Sprite">
-            <img class="sprite-hero sprite-ship-bottom" src="/static/img/sprites/ship.svg" alt="Ship Sprite">
+            <img class="sprite-hero sprite-alien-ship-top" src="{% static 'img/sprites/alien-ship.svg' %}" alt="Alien Ship Sprite">
+            <img class="sprite-hero sprite-alien-top-right" src="{% static 'img/sprites/alien-sprite.svg' %}" alt="Alien Sprite">
+            <img class="sprite-hero sprite-alien-bottom-left" src="{% static 'img/sprites/alien-sprite.svg' %}" alt="Alien Sprite">
+            <img class="sprite-hero sprite-ship-bottom" src="{% static 'img/sprites/ship.svg' %}" alt="Ship Sprite">
             <div class="hero-content">
                 <p class="hero-prompt">
                     <span class="prompt-caret">&gt;</span>
@@ -53,7 +27,7 @@
                 <div class="about-content">
                     <p> {{ bio }} </p>
                     <div class="photo-frame">
-                        <img id="profile-picture" src="/static/img/profile.png" alt="Profile Picture">
+                        <img id="profile-picture" src="{% static 'img/profile.png' %}" alt="Profile Picture">
                     </div>
                 </div>
 
@@ -96,115 +70,122 @@
                     </div>
                 </section>
             </div>
-            <img class="sprite-about sprite-1" src="/static/img/sprites/alien-sprite.svg" alt="Alien Sprite">
-            <img class="sprite-about sprite-2" src="/static/img/sprites/alien-sprite.svg" alt="Alien Sprite">
+            <img class="sprite-about sprite-1" src="{% static 'img/sprites/alien-sprite.svg' %}" alt="Alien Sprite">
+            <img class="sprite-about sprite-2" src="{% static 'img/sprites/alien-sprite.svg' %}" alt="Alien Sprite">
         </section>
 
         <section id="projects" class="projects">
             <div class="section-container">
                 <h1 class="section-title">Projects</h1>
                 <div class="projects-content">
-                    <div class="project-sidebar">
-                        {% for project in projects %}
-                            <button class="project-tab-btn {% if forloop.first %}active{% endif %}"
-                                    data-name="{{ project.name }}"
-                                    data-url="{{ project.url|default:'https://example.com' }}"
-                                    data-description="{{ project.description }}">
-                                &gt; {{ project.name }}
-                            </button>
-                        {% empty %}
-                            <p class="no-projects">No projects available.</p>
-                        {% endfor %}
+                    <div class="project-sidebar" id="project-sidebar">
+                        <p class="no-projects">Loading projects...</p>
                     </div>
 
-                    <div class="project-display">
-                        {% if projects %}
-                            {% with first_project=projects|first %}
-                                <div class="project-card">
-
-                                    <div class="preview-frame">
-                                        <iframe id="active-project-frame"
-                                                class="project-iframe"
-                                                src="{{ first_project.url|default:'https://example.com' }}"
-                                                title="{{ first_project.name }}">
-                                        </iframe>
-                                    </div>
-                                </div>
-                                <div class="project-info">
-                                    <a id="active-project-link" href="{{ first_project.url }}" target="_blank" rel="noopener noreferrer" class="project-title-link">
-                                        <h3 id="active-project-title">{{ first_project.name }}</h3>
-                                    </a>
-                                    <p id="active-project-desc" class="project-description">{{ first_project.description }}</p>
-                                </div>
-                            {% endwith %}
-                        {% endif %}
+                    <div class="project-display" id="project-display" style="display: none;">
+                        <div class="project-card">
+                            <div class="preview-frame">
+                                <iframe id="active-project-frame"
+                                        class="project-iframe"
+                                        src=""
+                                        title="">
+                                </iframe>
+                            </div>
+                        </div>
+                        <div class="project-info">
+                            <a id="active-project-link" href="" target="_blank" rel="noopener noreferrer" class="project-title-link">
+                                <h3 id="active-project-title"></h3>
+                            </a>
+                            <p id="active-project-desc" class="project-description"></p>
+                        </div>
                     </div>
                 </div>
             </div>
-            <img class="sprite-projects sprite-left" src="/static/img/sprites/ship.svg" alt="Ship Sprite">
-            <img class="sprite-projects sprite-right" src="/static/img/sprites/alien-ship.svg" alt="Alien Ship Sprite">
+            <img class="sprite-projects sprite-left" src="{% static 'img/sprites/ship.svg' %}" alt="Ship Sprite">
+            <img class="sprite-projects sprite-right" src="{% static 'img/sprites/alien-ship.svg' %}" alt="Alien Ship Sprite">
         </section>
 
         <section id="contact" class="contact-social">
             <h2>Connect With Me!</h2>
             <div class="social-list">
                 <a href="https://github.com/SyabilWafi" target="_blank" rel="noopener noreferrer" class="social-item">
-                    <img src="/static/img/icons/github-icon.svg" alt="GitHub" class="social-icon">
+                    <img src="{% static 'img/icons/github-icon.svg' %}" alt="GitHub" class="social-icon">
                     <span class="social-text">SyabilWafi</span>
                 </a>
                 <a href="https://www.linkedin.com/in/syabil-wafi-ahdi" target="_blank" rel="noopener noreferrer" class="social-item">
-                    <img src="/static/img/icons/linkedin-icon.svg" alt="LinkedIn" class="social-icon">
+                    <img src="{% static 'img/icons/linkedin-icon.svg' %}" alt="LinkedIn" class="social-icon">
                     <span class="social-text">Syabil Wafi Ahdi</span>
                 </a>
                 <a href="https://www.instagram.com/syabil_waf" target="_blank" rel="noopener noreferrer" class="social-item">
-                    <img src="/static/img/icons/instagram-icon.svg" alt="Instagram" class="social-icon">
+                    <img src="{% static 'img/icons/instagram-icon.svg' %}" alt="Instagram" class="social-icon">
                     <span class="social-text">@syabil_waf</span>
                 </a>
                 <a href="mailto:syabilwafi321@gmail.com" class="social-item">
-                    <img src="/static/img/icons/email-icon.svg" alt="Email" class="social-icon">
+                    <img src="{% static 'img/icons/email-icon.svg' %}" alt="Email" class="social-icon">
                     <span class="social-text">syabilwafi321@gmail.com</span>
                 </a>
             </div>
         </section>
     </main>
+{% endblock content %}
 
-    <svg style="display: none;">
-        <defs>
-            <filter id="crt-warp">
-                <feTurbulence type="fractalNoise" baseFrequency="0.0001" numOctaves="1" result="noise" />
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="20" xChannelSelector="R" yChannelSelector="G" />
-            </filter>
-        </defs>
-    </svg>
-<script>
-    const menuToggle = document.getElementById("menu-toggle");
-    const navLinks = document.getElementById('nav-links');
+{% block scripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('project-sidebar');
+            const displayArea = document.getElementById('project-display');
+            const activeFrame = document.getElementById('active-project-frame');
+            const activeTitle = document.getElementById('active-project-title');
+            const activeLink = document.getElementById('active-project-link');
+            const activeDesc = document.getElementById('active-project-desc');
 
-    menuToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        navLinks.classList.toggle('active');
-    })
+            async function loadProjects() {
+                try {
+                    const response = await fetch("{% url 'main:get_projects_json' %}");
+                    const projects = await response.json();
 
-    document.addEventListener('DOMContentLoaded', () => {
-    const tabButtons = document.querySelectorAll('.project-tab-btn');
-    const activeFrame = document.getElementById('active-project-frame');
-    const activeTitle = document.getElementById('active-project-title');
-    const activeLink = document.getElementById('active-project-link');
-    const activeDesc = document.getElementById('active-project-desc');
+                    if (!projects || projects.length === 0) {
+                        sidebar.innerHTML = '<p class="no-projects">No projects available.</p>';
+                        displayArea.style.display = 'none';
+                        return;
+                    }
 
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
+                    sidebar.innerHTML = '';
+                    displayArea.style.display = 'flex';
 
-            activeTitle.textContent = button.dataset.name;
-            activeLink.href = button.dataset.url;
-            activeFrame.src = button.dataset.url;
-            activeFrame.title = button.dataset.name;
-            activeDesc.textContent = button.dataset.description;
+                    projects.forEach((item, index) => {
+                        const fields = item.fields;
+                        const button = document.createElement('button');
+                        button.className = `project-tab-btn ${index === 0 ? 'active' : ''}`;
+                        button.innerHTML = `&gt; ${fields.name}`;
+
+                        button.addEventListener('click', () => {
+                            document.querySelectorAll('.project-tab-btn').forEach(btn => btn.classList.remove('active'));
+                            button.classList.add('active');
+                            updateDisplay(fields);
+                        });
+
+                        sidebar.appendChild(button);
+                    });
+
+                    updateDisplay(projects[0].fields);
+
+                } catch (error) {
+                    console.error('Failed to load projects:', error);
+                    sidebar.innerHTML = '<p class="no-projects">Error loading projects.</p>';
+                }
+            }
+
+            function updateDisplay(fields) {
+                const url = fields.url || 'https://example.com';
+                activeTitle.textContent = fields.name;
+                activeLink.href = url;
+                activeFrame.src = url;
+                activeFrame.title = fields.name;
+                activeDesc.textContent = fields.description;
+            }
+
+            loadProjects();
         });
-    });
-});
-</script>
-</body>
-</html>
+    </script>
+{% endblock scripts %}

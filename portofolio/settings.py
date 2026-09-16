@@ -38,6 +38,7 @@ ALLOWED_HOSTS = [
 
 CSRF_TRUSTED_ORIGINS = [
     "https://syabil-wafi-portfolio.pws.cs.ui.ac.id",
+    "https://127.0.0.1",
 ]
 
 # Application definition
