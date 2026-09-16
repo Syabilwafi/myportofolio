@@ -1,0 +1,150 @@
+.projects-form-main {
+    position: relative;
+    width: 100%;
+    min-height: calc(100vh - 110px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+.form-container {
+    position: relative;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    z-index: 5;
+}
+
+.form-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 3rem;
+}
+
+.project-form {
+    flex: 1 1 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-heading-container {
+    flex: 1 1 45%;
+    text-align: right;
+}
+
+.form-heading {
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-family: var(--font-pixel), sans-serif;
+    color: var(--green-bright);
+    text-shadow: var(--glow-md);
+    line-height: 1.2;
+    letter-spacing: 0.05em;
+}
+
+.projects-form-main .sprite-1 {
+    position: fixed;
+    top: 15vh;
+    left: 10vw;
+    width: 60px;
+    rotate: -12deg;
+    animation-delay: 0s;
+}
+
+.projects-form-main .sprite-2 {
+    position: fixed;
+    top: 15vh;
+    right: 22vw;
+    width: 140px;
+    rotate: 10deg;
+    animation-delay: 0.5s;
+}
+
+.projects-form-main .sprite-3 {
+    position: fixed;
+    top: 36vh;
+    left: 55vw;
+    width: 65px;
+    rotate: -8deg;
+    animation-delay: 1s;
+}
+
+.projects-form-main .sprite-4 {
+    position: fixed;
+    bottom: 12vh;
+    left: 5vw;
+    width: 110px;
+    rotate: 15deg;
+    animation-delay: 1.5s;
+}
+
+.projects-form-main .sprite-5 {
+    position: fixed;
+    bottom: 16vh;
+    right: 18vw;
+    width: 60px;
+    rotate: -5deg;
+    animation-delay: 2s;
+}
+
+.project-form .form-control {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--green-bright);
+    color: var(--green-bright);
+    font-family: var(--font-pixel), sans-serif;
+    font-size: 0.95rem;
+    padding: 1rem 1.2rem;
+    outline: none;
+    box-shadow: inset 0 0 8px rgba(181, 245, 66, 0.05);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.project-form .form-control::placeholder {
+    color: var(--green-glow);
+    opacity: 0.7;
+}
+
+.project-form .form-control:focus {
+    border-color: var(--green-bright);
+    box-shadow: 0 0 12px var(--green-glow), inset 0 0 10px rgba(181, 245, 66, 0.1);
+}
+
+.project-form textarea.form-control {
+    min-height: 220px;
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.form-error {
+    color: #ff5555;
+    font-size: 0.8rem;
+    margin-top: 0.4rem;
+    text-shadow: 0 0 4px rgba(255, 85, 85, 0.4);
+}
+
+@media (max-width: 768px) {
+    .form-wrapper {
+        flex-direction: column-reverse;
+        gap: 2rem;
+    }
+
+    .form-heading-container {
+        text-align: center;
+    }
+
+    .project-form {
+        width: 100%;
+    }
+
+    .sprite-form {
+        display: none;
+    }
+}

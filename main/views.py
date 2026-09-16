@@ -1,4 +1,8 @@
-from django.shortcuts import render
+from django.contrib import messages
+from django.core import serializers
+from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404, redirect, render
+from main.forms import ProjectForm
 from main.models import Experience, Project
 
 
@@ -19,3 +23,18 @@ def show_main(request):
         "projects": projects,
     }
     return render(request, "index.html", context)
+
+def create_project(request):
+    form = ProjectForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, 'Project created successfully!')
+        return redirect('main:show_main')
+    else:
+        messages.error(request, 'Failed to create project. Please check the form.')
+    context = {
+        "form": form,
+    }
+
+    return render(request, 'projects_form.html', context)

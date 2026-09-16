@@ -310,7 +310,8 @@ body {
 /* Sprites */
 .sprite-hero,
 .sprite-about,
-.sprite-projects {
+.sprite-projects,
+.sprite-form {
     position: absolute;
     z-index: 1;
     pointer-events: none;
