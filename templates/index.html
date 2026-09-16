@@ -78,39 +78,26 @@
             <div class="section-container">
                 <h1 class="section-title">Projects</h1>
                 <div class="projects-content">
-                    <div class="project-sidebar">
-                        {% for project in projects %}
-                            <button class="project-tab-btn {% if forloop.first %}active{% endif %}"
-                                    data-name="{{ project.name }}"
-                                    data-url="{{ project.url|default:'https://example.com' }}"
-                                    data-description="{{ project.description }}">
-                                &gt; {{ project.name }}
-                            </button>
-                        {% empty %}
-                            <p class="no-projects">No projects available.</p>
-                        {% endfor %}
+                    <div class="project-sidebar" id="project-sidebar">
+                        <p class="no-projects">Loading projects...</p>
                     </div>
 
-                    <div class="project-display">
-                        {% if projects %}
-                            {% with first_project=projects|first %}
-                                <div class="project-card">
-                                    <div class="preview-frame">
-                                        <iframe id="active-project-frame"
-                                                class="project-iframe"
-                                                src="{{ first_project.url|default:'https://example.com' }}"
-                                                title="{{ first_project.name }}">
-                                        </iframe>
-                                    </div>
-                                </div>
-                                <div class="project-info">
-                                    <a id="active-project-link" href="{{ first_project.url }}" target="_blank" rel="noopener noreferrer" class="project-title-link">
-                                        <h3 id="active-project-title">{{ first_project.name }}</h3>
-                                    </a>
-                                    <p id="active-project-desc" class="project-description">{{ first_project.description }}</p>
-                                </div>
-                            {% endwith %}
-                        {% endif %}
+                    <div class="project-display" id="project-display" style="display: none;">
+                        <div class="project-card">
+                            <div class="preview-frame">
+                                <iframe id="active-project-frame"
+                                        class="project-iframe"
+                                        src=""
+                                        title="">
+                                </iframe>
+                            </div>
+                        </div>
+                        <div class="project-info">
+                            <a id="active-project-link" href="" target="_blank" rel="noopener noreferrer" class="project-title-link">
+                                <h3 id="active-project-title"></h3>
+                            </a>
+                            <p id="active-project-desc" class="project-description"></p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -145,24 +132,60 @@
 {% block scripts %}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const tabButtons = document.querySelectorAll('.project-tab-btn');
+            const sidebar = document.getElementById('project-sidebar');
+            const displayArea = document.getElementById('project-display');
             const activeFrame = document.getElementById('active-project-frame');
             const activeTitle = document.getElementById('active-project-title');
             const activeLink = document.getElementById('active-project-link');
             const activeDesc = document.getElementById('active-project-desc');
 
-            tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    tabButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
+            async function loadProjects() {
+                try {
+                    const response = await fetch("{% url 'main:get_projects_json' %}");
+                    const projects = await response.json();
 
-                    activeTitle.textContent = button.dataset.name;
-                    activeLink.href = button.dataset.url;
-                    activeFrame.src = button.dataset.url;
-                    activeFrame.title = button.dataset.name;
-                    activeDesc.textContent = button.dataset.description;
-                });
-            });
+                    if (!projects || projects.length === 0) {
+                        sidebar.innerHTML = '<p class="no-projects">No projects available.</p>';
+                        displayArea.style.display = 'none';
+                        return;
+                    }
+
+                    sidebar.innerHTML = '';
+                    displayArea.style.display = 'flex';
+
+                    projects.forEach((item, index) => {
+                        const fields = item.fields;
+                        const button = document.createElement('button');
+                        button.className = `project-tab-btn ${index === 0 ? 'active' : ''}`;
+                        button.innerHTML = `&gt; ${fields.name}`;
+
+                        button.addEventListener('click', () => {
+                            document.querySelectorAll('.project-tab-btn').forEach(btn => btn.classList.remove('active'));
+                            button.classList.add('active');
+                            updateDisplay(fields);
+                        });
+
+                        sidebar.appendChild(button);
+                    });
+
+                    updateDisplay(projects[0].fields);
+
+                } catch (error) {
+                    console.error('Failed to load projects:', error);
+                    sidebar.innerHTML = '<p class="no-projects">Error loading projects.</p>';
+                }
+            }
+
+            function updateDisplay(fields) {
+                const url = fields.url || 'https://example.com';
+                activeTitle.textContent = fields.name;
+                activeLink.href = url;
+                activeFrame.src = url;
+                activeFrame.title = fields.name;
+                activeDesc.textContent = fields.description;
+            }
+
+            loadProjects();
         });
     </script>
 {% endblock scripts %}

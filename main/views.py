@@ -1,3 +1,5 @@
+import json
+
 from django.contrib import messages
 from django.core import serializers
 from django.http import HttpResponse
@@ -8,7 +10,6 @@ from main.models import Experience, Project
 
 def show_main(request):
     experiences = Experience.objects.all().order_by('-started_at')
-    projects = Project.objects.all().order_by('name')
 
     context = {
         "name": "Syabil Wafi",
@@ -20,7 +21,6 @@ def show_main(request):
             "developing my skills in programming and problem-solving, and I'm eager to contribute to impactful projects, grow as a technologist, and collaborate with others to create meaningful solutions."
         ),
         "experiences": experiences,
-        "projects": projects,
     }
     return render(request, "index.html", context)
 
@@ -38,3 +38,13 @@ def create_project(request):
     }
 
     return render(request, 'projects_form.html', context)
+
+def get_projects_json(request):
+    projects = Project.objects.all()
+
+    name_query = request.GET.get('name', '').strip()
+    if name_query:
+        projects = projects.filter(name__icontains=name_query)
+
+    projects_json = serializers.serialize('json', projects)
+    return HttpResponse(projects_json, content_type='application/json')
