@@ -181,6 +181,7 @@
 {% endblock content %}
 
 {% block scripts %}
+{% endblock scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const postTabs = document.querySelectorAll('.post-tab');
@@ -197,7 +198,6 @@
         const openBtn = document.getElementById('open-modal-btn');
         const closeBtn = document.getElementById('close-modal-btn');
 
-        // Sidebar Toggle Handler
         sidebarToggleBtn?.addEventListener('click', () => {
             blogSidebar?.classList.toggle('show');
         });
@@ -268,4 +268,3 @@
         blogSidebar?.classList.toggle('show');
     });
 </script>
-{% endblock scripts %}

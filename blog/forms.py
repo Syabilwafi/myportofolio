@@ -32,3 +32,7 @@ class CommentForm(ModelForm):
             'username': TextInput(attrs={'class': 'retro-input', 'placeholder': 'Your name'}),
             'content': Textarea(attrs={'class': 'retro-textarea', 'rows': 1, 'placeholder': 'Add a comment'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].required = False
