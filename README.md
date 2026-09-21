@@ -85,3 +85,13 @@ di review, verifikasi, dan disesuaikan dengan kebutuhan proyek. Pilihan struktur
 
 AI lebih digunakan untuk mengubah tampilan `blog.html` menjadi responsive dengan menambahkan query selector untuk menyesuaikan tampilan pada berbagai ukuran layar dari 
 kode yang sudah ditulis sendiri.
+
+## Tugas 3
+
+---
+
+1. Menggunakan `ModelForm` pada Django jauh lebih efisien dibandingkan membuat form HTML secara manual karena `ModelForm` secara otomatis menghasilkan field form berdasarkan struktur kolom yang sudah kita definisikan pada model. Selain menerapkan prinsip *Don't Repeat Yourself* (DRY), `ModelForm` juga secara otomatis menangani validasi data, seperti mengecek tipe data, batas karakter, hingga aturan *unique*, serta memudahkan proses menyimpan data ke basis data hanya dengan memanggil method `.save()`. Sementara itu, penambahan `{% csrf_token %}` diwajibkan untuk melindungi aplikasi dari serangan *Cross-Site Request Forgery* (CSRF). Tag ini menghasilkan token rahasia unik pada form yang akan diverifikasi oleh Django saat form dikirimkan, sehingga *request* tanpa token yang valid akan langsung ditolak demi keamanan data pengguna.
+
+2. JSON lebih disukai daripada XML dalam pengembangan aplikasi web modern karena ukurannya yang jauh lebih ringkas tanpa keberadaan tag penutup, sehingga menghemat *bandwidth* dan mempercepat proses transfer data di jaringan. Selain itu, karena JSON merupakan struktur data *native* JavaScript, proses *parsing* data di tingkat *browser* maupun kerangka kerja frontend modern dapat berjalan jauh lebih cepat tanpa perlu melalui pemrosesan DOM XML yang rumit. Format berbasis *key-value pair* pada JSON juga jauh lebih rapi dan mudah dibaca oleh pengembang dibandingkan dengan hierarki dokumen XML yang dipenuhi oleh tag-tag pembuka dan penutup.
+
+3. Alur pengembalian data portofolio dalam bentuk JSON dimulai saat klien mengirimkan *request* HTTP GET ke URL *endpoint* yang dituju. Fungsi *view* pada `views.py` kemudian akan memproses *request* tersebut dengan mengambil data dari basis data menggunakan QuerySet. Data QuerySet yang didapat lalu diubah bentuknya melalui proses serialisasi menggunakan fungsi serialisator Django. Setelah data terkonversi ke dalam format JSON, data tersebut dibungkus ke dalam `HttpResponse` dengan *content-type* `application/json` untuk dikirimkan kembali ke klien. Proses serialisasi ini wajib dilakukan karena objek model Django merupakan objek Python internal yang tidak bisa dikirimkan langsung melalui protokol HTTP maupun dipahami oleh bahasa pemograman lain di sisi frontend, sehingga serialisasi bertugas menerjemahkan objek Python yang kompleks menjadi format teks terstruktur yang siap dikonsumsi oleh sistem luar.
