@@ -1,5 +1,5 @@
+# forms.py
 from django.forms import ModelForm, TextInput, Textarea
-
 from blog.models import Post, Comment
 
 class PostForm(ModelForm):
@@ -13,20 +13,22 @@ class PostForm(ModelForm):
         }
 
         widgets = {
-            'title': TextInput(attrs={'class': 'form-control', 'maxlength':255, "placeholder": "Enter title"}),
-            'content': Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': "Enter content"}),
+            'title': TextInput(attrs={'class': 'form-control', 'maxlength': 255, "placeholder": "Enter title"}),
+            'content': Textarea(attrs={'class': 'form-control', 'rows': 1, 'placeholder': "Enter content"}),
         }
 
 
 class CommentForm(ModelForm):
     class Meta:
         model = Comment
-        fields = ['content']
+        fields = ['username', 'content']
 
         labels = {
-            'content': 'Comment',
+            'username': 'Your Name',
+            'content': 'Add a Comment',
         }
 
         widgets = {
-            'content': Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': "Enter comment"}),
+            'username': TextInput(attrs={'class': 'retro-input', 'placeholder': 'Your name'}),
+            'content': Textarea(attrs={'class': 'retro-textarea', 'rows': 1, 'placeholder': 'Add a comment'}),
         }

@@ -14,6 +14,14 @@ main.blog {
     padding: 0 1.5rem;
 }
 
+.post-article {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 0;
+}
+
 .blog-window {
     display: flex;
     flex-direction: column;
@@ -70,6 +78,8 @@ main.blog {
     color: var(--green-glow);
     font-size: 0.95rem;
     line-height: 1.8;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 
@@ -210,14 +220,15 @@ main.blog {
 .comment-text {
     color: var(--green-glow);
     font-size: 0.9rem;
+    white-space: pre-line;
 }
 
-.comment-time {
-    color: rgba(181, 245, 66, 0.6);
-    font-size: 0.8rem;
-    white-space: nowrap;
+.comment-text {
+    color: var(--green-glow);
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
-
 
 /* Form Modals */
 

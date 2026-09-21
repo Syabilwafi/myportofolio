@@ -30,9 +30,52 @@
                         <article class="post-article">
                             {% if posts %}
                                 {% with first_post=posts|first %}
-                                    <p id="post-date" class="post-date">&gt; Posted on {{ first_post.created_at|date:"M d, Y" }}</p>
-                                    <div id="post-text" class="post-text">
-                                        {{ first_post.content|linebreaks }}
+                                    <div class="post-content">
+                                        <p id="post-date" class="post-date">&gt; Posted on {{ first_post.created_at|date:"M d, Y" }}</p>
+                                        <div id="post-text" class="post-text">{{ first_post.content }}</div>
+                                    </div>
+
+                                    <div class="comment-form-container">
+                                        <form method="POST" action="{% url 'blog:create_comment' %}" class="comment-form">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="post_id" id="comment-post-id" value="{{ first_post.id }}">
+
+                                            <div class="input-group">
+                                                <input
+                                                    type="text"
+                                                    name="username"
+                                                    class="retro-input"
+                                                    placeholder="Your name"
+                                                >
+                                                <span class="input-hint">Leave blank for anonymous</span>
+                                            </div>
+
+                                            <div class="input-group">
+                                                <textarea
+                                                    name="content"
+                                                    class="retro-textarea"
+                                                    placeholder="Add a comment"
+                                                    rows="3"
+                                                    required
+                                                ></textarea>
+                                            </div>
+
+                                            <button type="submit" class="retro-btn submit-comment-btn">Submit Comment</button>
+                                        </form>
+
+                                        <div id="comments-container" class="comment-list">
+                                            {% for comment in first_post.comment_set.all %}
+                                                <div class="comment-item">
+                                                    <span class="comment-author-name">{{ comment.username }}</span>
+                                                    <div class="comment-row">
+                                                        <span class="comment-text">{{ comment.content }}</span>
+                                                        <span class="comment-time">{{ comment.created_at|timesince }} ago</span>
+                                                    </div>
+                                                </div>
+                                            {% empty %}
+                                                <p class="no-comments-text" style="color: rgba(181, 245, 66, 0.5); margin-top: 1rem;">No comments yet.</p>
+                                            {% endfor %}
+                                        </div>
                                     </div>
                                 {% endwith %}
                             {% else %}
@@ -48,9 +91,19 @@
                                     <li class="post-item {% if forloop.first %}active{% endif %}">
                                         <a href="#"
                                            class="post-tab"
+                                           data-id="{{ post.id }}"
                                            data-title="{{ post.title }}"
                                            data-date="{{ post.created_at|date:'M d, Y' }}"
-                                           data-content="{{ post.content|linebreaks }}">
+                                           data-content="{{ post.content }}"
+                                           data-comments='[
+                                               {% for c in post.comment_set.all %}
+                                                   {
+                                                       "username": "{{ c.username|escapejs }}",
+                                                       "content": "{{ c.content|escapejs }}",
+                                                       "time": "{{ c.created_at|timesince|escapejs }} ago"
+                                                   }{% if not forloop.last %},{% endif %}
+                                               {% endfor %}
+                                           ]'>
                                             {{ post.title }}
                                         </a>
 
@@ -79,7 +132,6 @@
 
         <div id="create-post-modal" class="modal-overlay hidden" aria-hidden="true" role="dialog">
             <div class="modal-window">
-
                 <header class="modal-header">
                     <h2 class="modal-title">Create Post</h2>
                     <button id="close-modal-btn" type="button" class="modal-close-btn" aria-label="Close modal">X</button>
@@ -114,7 +166,6 @@
                         <button type="submit" class="retro-btn submit-btn">Send Message</button>
                     </div>
                 </form>
-
             </div>
         </div>
 
@@ -131,7 +182,34 @@
         const windowTitle = document.getElementById('window-title');
         const postDate = document.getElementById('post-date');
         const postText = document.getElementById('post-text');
+        const commentPostIdInput = document.getElementById('comment-post-id');
+        const commentsContainer = document.getElementById('comments-container');
 
+        const modal = document.getElementById('create-post-modal');
+        const openBtn = document.getElementById('open-modal-btn');
+        const closeBtn = document.getElementById('close-modal-btn');
+
+        // Render Comments Helper
+        const renderComments = (comments) => {
+            if (!commentsContainer) return;
+
+            if (!comments || comments.length === 0) {
+                commentsContainer.innerHTML = '<p class="no-comments-text" style="color: rgba(181, 245, 66, 0.5); margin-top: 1rem;">No comments yet.</p>';
+                return;
+            }
+
+            commentsContainer.innerHTML = comments.map(c => `
+                <div class="comment-item">
+                    <span class="comment-author-name">${c.username}</span>
+                    <div class="comment-row">
+                        <span class="comment-text">${c.content}</span>
+                        <span class="comment-time">${c.time}</span>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        // Post Tab Switch Handler
         postTabs.forEach(tab => {
             tab.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -139,17 +217,21 @@
                 document.querySelectorAll('.post-item').forEach(item => item.classList.remove('active'));
                 tab.parentElement.classList.add('active');
 
-                const { title, date, content } = tab.dataset;
+                const { id, title, date, content, comments } = tab.dataset;
 
                 if (windowTitle) windowTitle.textContent = title;
                 if (postDate) postDate.textContent = `> Posted on ${date}`;
-                if (postText) postText.innerHTML = content;
+                if (postText) postText.textContent = content;
+                if (commentPostIdInput) commentPostIdInput.value = id;
+
+                try {
+                    const parsedComments = JSON.parse(comments || '[]');
+                    renderComments(parsedComments);
+                } catch (err) {
+                    renderComments([]);
+                }
             });
         });
-
-        const modal = document.getElementById('create-post-modal');
-        const openBtn = document.getElementById('open-modal-btn');
-        const closeBtn = document.getElementById('close-modal-btn');
 
         const openModal = () => {
             modal.classList.remove('hidden');
