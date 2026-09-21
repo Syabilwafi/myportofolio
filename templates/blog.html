@@ -14,14 +14,19 @@
             <div class="blog-window terminal-window">
 
                 <header class="window-header">
-                    {% if posts %}
-                        {% with first_post=posts|first %}
-                            <span id="window-title" class="window-title">{{ first_post.title }}</span>
-                        {% endwith %}
-                    {% else %}
-                        <span class="window-title">BLOG</span>
-                        <button type="button" class="window-close-btn" aria-label="Close">X</button>
-                    {% endif %}
+                    <div class="window-header-left">
+                        <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" type="button" aria-label="Toggle posts menu">
+                            ☰
+                        </button>
+                        {% if posts %}
+                            {% with first_post=posts|first %}
+                                <span id="window-title" class="window-title">{{ first_post.title }}</span>
+                            {% endwith %}
+                        {% else %}
+                            <span class="window-title">BLOG</span>
+                        {% endif %}
+                    </div>
+                    <button type="button" class="window-close-btn" aria-label="Close">X</button>
                 </header>
 
                 <div class="blog-body">
@@ -185,11 +190,18 @@
         const commentPostIdInput = document.getElementById('comment-post-id');
         const commentsContainer = document.getElementById('comments-container');
 
+        const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+        const blogSidebar = document.querySelector('.blog-sidebar');
+
         const modal = document.getElementById('create-post-modal');
         const openBtn = document.getElementById('open-modal-btn');
         const closeBtn = document.getElementById('close-modal-btn');
 
-        // Render Comments Helper
+        // Sidebar Toggle Handler
+        sidebarToggleBtn?.addEventListener('click', () => {
+            blogSidebar?.classList.toggle('show');
+        });
+
         const renderComments = (comments) => {
             if (!commentsContainer) return;
 
@@ -209,7 +221,6 @@
             `).join('');
         };
 
-        // Post Tab Switch Handler
         postTabs.forEach(tab => {
             tab.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -223,6 +234,8 @@
                 if (postDate) postDate.textContent = `> Posted on ${date}`;
                 if (postText) postText.textContent = content;
                 if (commentPostIdInput) commentPostIdInput.value = id;
+
+                blogSidebar?.classList.remove('show');
 
                 try {
                     const parsedComments = JSON.parse(comments || '[]');
@@ -249,6 +262,10 @@
         window.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
+    });
+
+    sidebarToggleBtn?.addEventListener('click', () => {
+        blogSidebar?.classList.toggle('show');
     });
 </script>
 {% endblock scripts %}
