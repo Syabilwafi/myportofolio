@@ -32,12 +32,17 @@ main.blog {
 .window-close-btn {
     background: transparent;
     border: none;
-    color: var(--bg-dark);
+    color: var(--green-bright);
     font-family: var(--font-pixel), sans-serif;
     font-size: 1.1rem;
     font-weight: 700;
     line-height: 1;
     cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+.window-close-btn:hover {
+    transform: scale(1.2);
 }
 
 
@@ -94,6 +99,11 @@ main.blog {
 
 .post-item {
     border-bottom: 1px solid rgba(181, 245, 66, 0.25);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    padding: 1rem 1.2rem;
 }
 
 .post-item a,
@@ -111,15 +121,54 @@ main.blog {
     transition: all 0.2s ease;
 }
 
+.delete-btn {
+    color: var(--green-glow);
+    font-family: var(--font-pixel), sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0 0.5rem;
+    z-index: 2;
+    display: none;
+    background: transparent;
+    border: none;
+}
+
+.delete-btn:hover {
+    color: var(--green-bright);
+    transform: scale(1.2);
+}
+
+.delete-btn.active {
+    color: var(--bg-dark);
+    transform: scale(1.2);
+    display: inline;
+}
+
+.post-item:hover,
+.post-item.active {
+    background-color: var(--green-bright);
+}
+
 .post-item:hover a,
 .post-item.active a,
 .post-item:hover .post-tab,
 .post-item.active .post-tab {
-    background-color: var(--green-bright);
+    background-color: transparent;
     color: var(--bg-dark);
     font-weight: 700;
 }
 
+.post-item.active .delete-btn {
+    color: var(--bg-dark);
+    transform: scale(1.2);
+    display: inline;
+}
+
+.delete-btn:hover {
+    transform: scale(1.2);
+}
 
 /* Comments Section */
 

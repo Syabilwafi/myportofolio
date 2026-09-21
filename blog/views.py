@@ -1,12 +1,11 @@
-from django.core import serializers
-from django.http import HttpResponse
-from django.shortcuts import render, redirect
+# views.py
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_POST
 from .models import Post, Comment
 from .forms import PostForm
 
-
 def show_blog(request):
-    posts = Post.objects.all()
+    posts = Post.objects.all().order_by('-created_at')
     comments = Comment.objects.all()
 
     context = {
@@ -16,7 +15,6 @@ def show_blog(request):
     }
     return render(request, 'blog.html', context)
 
-
 def create_post(request):
     if request.method == 'POST':
         form = PostForm(request.POST)
@@ -25,13 +23,10 @@ def create_post(request):
             return redirect('blog:show_blog')
     return redirect('blog:show_blog')
 
-
-def get_blog_post(request, post_id):
-    posts = Post.objects.all()
-    title_query = request.GET.get('title', '').strip()
-
-    if title_query:
-        posts = posts.filter(title__icontains=title_query)
-
-    posts_json = serializers.serialize('json', posts)
-    return HttpResponse(posts_json, content_type='application/json')
+@require_POST
+def delete_post(request):
+    post_id = request.POST.get('post_id')
+    if post_id:
+        post = get_object_or_404(Post, pk=post_id)
+        post.delete()
+    return redirect('blog:show_blog')
