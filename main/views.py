@@ -3,7 +3,7 @@ import json
 from django.contrib import messages
 from django.core import serializers
 from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404, redirect, render
+from django.shortcuts import render, get_object_or_404, redirect
 from main.forms import ProjectForm
 from main.models import Experience, Project
 

@@ -4,6 +4,9 @@ from random import randint
 from django.db import models
 import uuid
 
+def get_default_anonymous_username():
+    return Comment.get_anonymous_username()
+
 class Post(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=200)
@@ -33,7 +36,7 @@ class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     content = models.TextField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
-    username = models.CharField(max_length=100, default=get_anonymous_username)
+    username = models.CharField(max_length=100, default=get_default_anonymous_username)
 
     class Meta:
         ordering = ['-created_at']
