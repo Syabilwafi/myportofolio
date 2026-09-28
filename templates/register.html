@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static %}
+{% block meta %}
+    <title>Register - {{ name }}</title>
+    <link rel="stylesheet" href="{% static 'css/blog.css' %}">
+{% endblock meta %}
+{% block content %}
+    <main class="auth-container">
+        <section id="register" class="auth-section">
+            <div class="section-container">
+                <div class="auth-window terminal-window">
+                    <header class="window-header">
+                        <span class="window-title">REGISTER</span>
+                    </header>
+
+                    <div class="auth-body">
+                        <form method="post" action="{% url 'main:register' %}" class="auth-form">
+                            {% csrf_token %}
+
+                            {% for error in form.non_field_errors %}
+                                <p class="form-error-message">&gt; Error: {{ error }}</p>
+                            {% endfor %}
+
+                            {% for field in form %}
+                                <div class="input-group">
+                                    <label for="{{ field.id_for_label }}" class="input-label">{{ field.label }}</label>
+                                    {% if field.widget.input_type == "textarea" %}
+                                        {{ field }}
+                                    {% else %}
+                                        {{ field }}
+                                    {% endif %}
+                                    {% if field.help_text %}
+                                        <span class="input-hint">{{ field.help_text|safe }}</span>
+                                    {% endif %}
+                                    {% for error in field.errors %}
+                                        <p class="form-error-message">&gt; {{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+
+                            <div class="auth-actions">
+                                <button type="submit" class="retro-btn submit-btn">Register Account</button>
+                            </div>
+                        </form>
+
+                        <div class="auth-link">
+                            <p>Already have an account? <a href="{% url 'main:login' %}" class="link-text">Login here</a>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock content %}

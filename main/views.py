@@ -7,6 +7,12 @@ from django.shortcuts import render, get_object_or_404, redirect
 from main.forms import ProjectForm
 from main.models import Experience, Project
 
+from django.contrib import messages
+from django.contrib.auth import login, logout
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.shortcuts import redirect, render
+
+
 
 def show_main(request):
     experiences = Experience.objects.all().order_by('-started_at')
@@ -48,3 +54,37 @@ def get_projects_json(request):
 
     projects_json = serializers.serialize('json', projects)
     return HttpResponse(projects_json, content_type='application/json')
+
+def register(request):
+    form = UserCreationForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Akun berhasil dibuat. Silakan login.")
+        return redirect("main:login")
+
+    context = {
+        "name": "Burhan",
+        "form": form,
+    }
+    return render(request, "register.html", context)
+
+def login_view(request):
+    form = AuthenticationForm(request, data=request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        user = form.get_user()
+        login(request, user)
+        messages.success(request, f"Selamat datang, {user.username}!")
+        return redirect("main:show_main")
+
+    context = {
+        "name": "Burhan",
+        "form": form,
+    }
+    return render(request, "login.html", context)
+
+def logout_view(request):
+    logout(request)
+    messages.success(request, "Anda berhasil logout.")
+    return redirect("main:show_main")
