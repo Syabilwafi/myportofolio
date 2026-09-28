@@ -1,21 +1,24 @@
 import json
-
-from django.contrib import messages
-from django.core import serializers
-from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404, redirect
-from main.forms import ProjectForm
-from main.models import Experience, Project
+from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.shortcuts import redirect, render
+from django.core import serializers
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views.decorators.http import require_http_methods
+
+from main.forms import ProjectForm, CustomUserCreationForm, CustomAuthenticationForm
+from main.models import Experience, Project
 
 
 
 def show_main(request):
     experiences = Experience.objects.all().order_by('-started_at')
+    last_login = request.COOKIES.get('last_login', 'Belum ada sesi login / Cookie tidak ditemukannya')
 
     context = {
         "name": "Syabil Wafi",
@@ -27,10 +30,15 @@ def show_main(request):
             "developing my skills in programming and problem-solving, and I'm eager to contribute to impactful projects, grow as a technologist, and collaborate with others to create meaningful solutions."
         ),
         "experiences": experiences,
+        "last_login": last_login,
     }
     return render(request, "index.html", context)
 
+@login_required(login_url="/login/")
 def create_project(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied("Only superusers can create projects.")
+
     form = ProjectForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -38,11 +46,12 @@ def create_project(request):
         messages.success(request, 'Project created successfully!')
         return redirect('main:show_main')
     else:
-        messages.error(request, 'Failed to create project. Please check the form.')
+        if request.method == "POST":
+            messages.error(request, 'Failed to create project. Please check the form.')
+
     context = {
         "form": form,
     }
-
     return render(request, 'projects_form.html', context)
 
 def get_projects_json(request):
@@ -52,11 +61,24 @@ def get_projects_json(request):
     if name_query:
         projects = projects.filter(name__icontains=name_query)
 
-    projects_json = serializers.serialize('json', projects)
-    return HttpResponse(projects_json, content_type='application/json')
+    projects_list = []
+    for project in projects:
+        projects_list.append({
+            'pk': str(project.id),
+            'model': 'main.project',
+            'fields': {
+                'name': project.name,
+                'url': project.url,
+                'description': project.description,
+                'stars_count': project.starred_by.count(),
+                'is_starred': project.starred_by.filter(pk=request.user.id).exists() if request.user.is_authenticated else False,
+            }
+        })
+
+    return HttpResponse(json.dumps(projects_list), content_type='application/json')
 
 def register(request):
-    form = UserCreationForm(request.POST or None)
+    form = CustomUserCreationForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
         form.save()
@@ -64,22 +86,29 @@ def register(request):
         return redirect("main:login")
 
     context = {
-        "name": "Burhan",
+        "name": "Syabil Wafi",
         "form": form,
     }
     return render(request, "register.html", context)
 
 def login_view(request):
-    form = AuthenticationForm(request, data=request.POST or None)
+    form = CustomAuthenticationForm(request, data=request.POST or None)
 
     if request.method == "POST" and form.is_valid():
         user = form.get_user()
         login(request, user)
         messages.success(request, f"Selamat datang, {user.username}!")
-        return redirect("main:show_main")
+
+        response = redirect("main:show_main")
+        response.set_cookie(
+            'last_login',
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            max_age=60*60*24*7  # 7 days
+        )
+        return response
 
     context = {
-        "name": "Burhan",
+        "name": "Syabil Wafi",
         "form": form,
     }
     return render(request, "login.html", context)
@@ -87,4 +116,25 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     messages.success(request, "Anda berhasil logout.")
-    return redirect("main:show_main")
+
+    response = redirect("main:show_main")
+    response.delete_cookie('last_login')
+    return response
+
+@login_required(login_url="/login/")
+@require_http_methods(["POST"])
+def toggle_star(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+
+    if project.starred_by.filter(id=request.user.id).exists():
+        project.starred_by.remove(request.user)
+        is_starred = False
+    else:
+        project.starred_by.add(request.user)
+        is_starred = True
+
+    return JsonResponse({
+        'success': True,
+        'is_starred': is_starred,
+        'stars_count': project.starred_by.count()
+    })
