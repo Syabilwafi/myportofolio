@@ -1,13 +1,14 @@
 import json
 from datetime import datetime
+from functools import wraps
 
 from django.contrib import messages
 from django.contrib.auth import login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core import serializers
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_http_methods
 
@@ -15,10 +16,48 @@ from main.forms import ProjectForm, CustomUserCreationForm, CustomAuthentication
 from main.models import Experience, Project
 
 
+# Helper function to check if user is superuser or editor
+def is_superuser_or_editor(user):
+    return user.is_superuser or user.groups.filter(name='Editor').exists()
+
+
+# Decorator to check superuser or editor permission
+def superuser_or_editor_required(view_func):
+    @wraps(view_func)
+    def wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('main:login')
+        if not is_superuser_or_editor(request.user):
+            return HttpResponseForbidden("You do not have permission to perform this action.")
+        return view_func(request, *args, **kwargs)
+    return wrapped_view
+
+
+# Decorator to check superuser only
+def superuser_required(view_func):
+    @wraps(view_func)
+    def wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('main:login')
+        if not request.user.is_superuser:
+            return HttpResponseForbidden("You do not have permission to perform this action.")
+        return view_func(request, *args, **kwargs)
+    return wrapped_view
+
+
 
 def show_main(request):
     experiences = Experience.objects.all().order_by('-started_at')
+    projects = Project.objects.all()
     last_login = request.COOKIES.get('last_login', 'Belum ada sesi login / Cookie tidak ditemukannya')
+
+    # Determine user permissions
+    is_superuser = request.user.is_superuser
+    is_editor = is_superuser_or_editor(request.user)
+    can_edit = is_editor
+    can_delete = is_superuser
+    can_create = is_superuser
+    can_star = request.user.is_authenticated
 
     context = {
         "name": "Syabil Wafi",
@@ -30,15 +69,19 @@ def show_main(request):
             "developing my skills in programming and problem-solving, and I'm eager to contribute to impactful projects, grow as a technologist, and collaborate with others to create meaningful solutions."
         ),
         "experiences": experiences,
+        "projects": projects,
         "last_login": last_login,
+        "is_superuser": is_superuser,
+        "is_editor": is_editor,
+        "can_edit": can_edit,
+        "can_delete": can_delete,
+        "can_create": can_create,
+        "can_star": can_star,
     }
     return render(request, "index.html", context)
 
-@login_required(login_url="/login/")
+@superuser_required
 def create_project(request):
-    if not request.user.is_superuser:
-        raise PermissionDenied("Only superusers can create projects.")
-
     form = ProjectForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -51,8 +94,45 @@ def create_project(request):
 
     context = {
         "form": form,
+        "action": "Create",
     }
     return render(request, 'projects_form.html', context)
+
+
+@superuser_or_editor_required
+def update_project(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    form = ProjectForm(request.POST or None, instance=project)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, 'Project updated successfully!')
+        return redirect('main:show_main')
+    else:
+        if request.method == "POST":
+            messages.error(request, 'Failed to update project. Please check the form.')
+
+    context = {
+        "form": form,
+        "action": "Update",
+        "project": project,
+    }
+    return render(request, 'projects_form.html', context)
+
+
+@superuser_required
+def delete_project(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+
+    if request.method == "POST":
+        project.delete()
+        messages.success(request, 'Project deleted successfully!')
+        return redirect('main:show_main')
+
+    context = {
+        "project": project,
+    }
+    return render(request, 'confirm_delete.html', context)
 
 def get_projects_json(request):
     projects = Project.objects.all()

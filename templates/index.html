@@ -97,7 +97,7 @@
             <div class="section-container">
                 <div class="section-header">
                     <h1 class="section-title">Projects</h1>
-                    {% if user.is_superuser %}
+                    {% if can_create %}
                         <a href="{% url 'main:create_project' %}" class="btn btn-filled btn-sm">+ Add Project</a>
                     {% endif %}
                 </div>
@@ -122,10 +122,31 @@
                             </a>
                             <p id="active-project-desc" class="project-description"></p>
                             <div class="project-actions">
-                                <button id="star-btn" class="star-btn" type="button" aria-label="Star this project">
-                                    <span class="star-icon">★</span>
-                                    <span id="star-count" class="star-count">0</span>
-                                </button>
+                                {% if can_star %}
+                                    <button id="star-btn" class="star-btn" type="button" aria-label="Star this project">
+                                        <span class="star-icon">★</span>
+                                        <span id="star-count" class="star-count">0</span>
+                                    </button>
+                                {% else %}
+                                    <button class="star-btn login-required" type="button" onclick="window.location.href='{% url 'main:login' %}';" title="Login to star projects">
+                                        <span class="star-icon">★</span>
+                                        <span class="star-count">0</span>
+                                    </button>
+                                {% endif %}
+
+                                {% if can_edit %}
+                                    <button id="edit-btn" class="edit-btn" type="button" aria-label="Edit this project" onclick="editProject()" style="display:none;">
+                                        <span class="btn-icon">✎</span>
+                                        <span>Edit</span>
+                                    </button>
+                                {% endif %}
+
+                                {% if can_delete %}
+                                    <button id="delete-btn" class="delete-btn" type="button" aria-label="Delete this project" onclick="deleteProject()" style="display:none;">
+                                        <span class="btn-icon">✕</span>
+                                        <span>Delete</span>
+                                    </button>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -229,7 +250,27 @@
                 } else {
                     starBtn.classList.remove('is-starred');
                 }
+
+                // Show/hide edit and delete buttons
+                const editBtn = document.getElementById('edit-btn');
+                const deleteBtn = document.getElementById('delete-btn');
+                if (editBtn) editBtn.style.display = 'flex';
+                if (deleteBtn) deleteBtn.style.display = 'flex';
             }
+
+            // Edit button handler
+            window.editProject = function() {
+                if (currentProjectId) {
+                    window.location.href = `/projects/${currentProjectId}/update/`;
+                }
+            };
+
+            // Delete button handler
+            window.deleteProject = function() {
+                if (currentProjectId) {
+                    window.location.href = `/projects/${currentProjectId}/delete/`;
+                }
+            };
 
             // Star button click handler
             starBtn.addEventListener('click', async () => {

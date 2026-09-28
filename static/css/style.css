@@ -729,6 +729,68 @@ body {
     font-size: 0.85rem;
 }
 
+.edit-btn,
+.delete-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1rem;
+    background-color: rgba(126, 203, 32, 0.1);
+    border: 1px solid var(--green-glow);
+    color: var(--green-glow);
+    font-family: var(--font-pixel), sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 3px;
+}
+
+.edit-btn:hover {
+    background-color: rgba(126, 203, 32, 0.2);
+    border-color: var(--green-bright);
+    color: var(--green-bright);
+}
+
+.delete-btn {
+    border-color: #ff6b6b;
+    color: #ff6b6b;
+    background-color: rgba(255, 107, 107, 0.1);
+}
+
+.delete-btn:hover {
+    background-color: rgba(255, 107, 107, 0.2);
+    border-color: #ff5252;
+    color: #ff5252;
+}
+
+.btn-icon {
+    font-size: 1em;
+}
+
+.star-btn.login-required {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.star-btn.login-required:hover {
+    background-color: rgba(126, 203, 66, 0.15);
+    border-color: var(--green-glow);
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+.retro-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.retro-btn:disabled:hover {
+    box-shadow: none;
+    opacity: 0.5;
+}
+
 
 /* Social Contacts */
 .contact-social {display: flex; justify-content: center; align-items: center; margin-bottom: 4rem;}
