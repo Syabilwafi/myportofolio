@@ -69,25 +69,6 @@
                         </div>
                     </div>
                 </section>
-
-                <section id="session-info" class="session-info">
-                    <div class="section-container">
-                        <div class="session-card">
-                            <p class="session-label">&gt; Last Login:</p>
-                            <p class="session-value">{{ last_login }}</p>
-                            {% if user.is_authenticated %}
-                                <p class="session-user">&gt; User: <span class="user-badge">{{ user.username }}</span></p>
-                                {% if user.is_superuser %}
-                                    <p class="session-role">&gt; Role: <span class="role-badge">Superuser</span></p>
-                                {% else %}
-                                    <p class="session-role">&gt; Role: <span class="role-badge">Authenticated User</span></p>
-                                {% endif %}
-                            {% else %}
-                                <p class="session-user">&gt; Status: <span class="user-badge">Guest</span></p>
-                            {% endif %}
-                        </div>
-                    </div>
-                </section>
             </div>
             <img class="sprite-about sprite-1" src="{% static 'img/sprites/alien-sprite.svg' %}" alt="Alien Sprite">
             <img class="sprite-about sprite-2" src="{% static 'img/sprites/alien-sprite.svg' %}" alt="Alien Sprite">
@@ -175,6 +156,25 @@
                     <img src="{% static 'img/icons/email-icon.svg' %}" alt="Email" class="social-icon">
                     <span class="social-text">syabilwafi321@gmail.com</span>
                 </a>
+            </div>
+        </section>
+
+        <section id="session-info" class="session-info">
+            <div class="section-container">
+                <div class="session-card">
+                    <p class="session-label">&gt; Last Login:</p>
+                    <p class="session-value">{{ last_login }}</p>
+                    {% if user.is_authenticated %}
+                        <p class="session-user">&gt; User: <span class="user-badge">{{ user.username }}</span></p>
+                        {% if user.is_superuser %}
+                            <p class="session-role">&gt; Role: <span class="role-badge">Superuser</span></p>
+                        {% else %}
+                            <p class="session-role">&gt; Role: <span class="role-badge">Authenticated User</span></p>
+                        {% endif %}
+                    {% else %}
+                        <p class="session-user">&gt; Status: <span class="user-badge">Guest</span></p>
+                    {% endif %}
+                </div>
             </div>
         </section>
     </main>
