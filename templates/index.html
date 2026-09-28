@@ -76,7 +76,12 @@
 
         <section id="projects" class="projects">
             <div class="section-container">
-                <h1 class="section-title">Projects</h1>
+                <div class="section-header">
+                    <h1 class="section-title">Projects</h1>
+                    {% if can_create %}
+                        <a href="{% url 'main:create_project' %}" class="btn btn-filled btn-sm">+ Add Project</a>
+                    {% endif %}
+                </div>
                 <div class="projects-content">
                     <div class="project-sidebar" id="project-sidebar">
                         <p class="no-projects">Loading projects...</p>
@@ -97,6 +102,33 @@
                                 <h3 id="active-project-title"></h3>
                             </a>
                             <p id="active-project-desc" class="project-description"></p>
+                            <div class="project-actions">
+                                {% if can_star %}
+                                    <button id="star-btn" class="star-btn" type="button" aria-label="Star this project">
+                                        <span class="star-icon">★</span>
+                                        <span id="star-count" class="star-count">0</span>
+                                    </button>
+                                {% else %}
+                                    <button class="star-btn login-required" type="button" onclick="window.location.href='{% url 'main:login' %}';" title="Login to star projects">
+                                        <span class="star-icon">★</span>
+                                        <span class="star-count">0</span>
+                                    </button>
+                                {% endif %}
+
+                                {% if can_edit %}
+                                    <button id="edit-btn" class="edit-btn" type="button" aria-label="Edit this project" onclick="editProject()" style="display:none;">
+                                        <span class="btn-icon">✎</span>
+                                        <span>Edit</span>
+                                    </button>
+                                {% endif %}
+
+                                {% if can_delete %}
+                                    <button id="delete-btn" class="delete-btn" type="button" aria-label="Delete this project" onclick="deleteProject()" style="display:none;">
+                                        <span class="btn-icon">✕</span>
+                                        <span>Delete</span>
+                                    </button>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -126,6 +158,25 @@
                 </a>
             </div>
         </section>
+
+        <section id="session-info" class="session-info">
+            <div class="section-container">
+                <div class="session-card">
+                    <p class="session-label">&gt; Last Login:</p>
+                    <p class="session-value">{{ last_login }}</p>
+                    {% if user.is_authenticated %}
+                        <p class="session-user">&gt; User: <span class="user-badge">{{ user.username }}</span></p>
+                        {% if user.is_superuser %}
+                            <p class="session-role">&gt; Role: <span class="role-badge">Superuser</span></p>
+                        {% else %}
+                            <p class="session-role">&gt; Role: <span class="role-badge">Authenticated User</span></p>
+                        {% endif %}
+                    {% else %}
+                        <p class="session-user">&gt; Status: <span class="user-badge">Guest</span></p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
     </main>
 {% endblock content %}
 
@@ -138,6 +189,10 @@
             const activeTitle = document.getElementById('active-project-title');
             const activeLink = document.getElementById('active-project-link');
             const activeDesc = document.getElementById('active-project-desc');
+            const starBtn = document.getElementById('star-btn');
+            const starCount = document.getElementById('star-count');
+            let currentProjectId = null;
+            let currentProjectData = null;
 
             async function loadProjects() {
                 try {
@@ -162,13 +217,17 @@
                         button.addEventListener('click', () => {
                             document.querySelectorAll('.project-tab-btn').forEach(btn => btn.classList.remove('active'));
                             button.classList.add('active');
-                            updateDisplay(fields);
+                            currentProjectId = item.pk;
+                            currentProjectData = item;
+                            updateDisplay(fields, item);
                         });
 
                         sidebar.appendChild(button);
                     });
 
-                    updateDisplay(projects[0].fields);
+                    currentProjectId = projects[0].pk;
+                    currentProjectData = projects[0];
+                    updateDisplay(projects[0].fields, projects[0]);
 
                 } catch (error) {
                     console.error('Failed to load projects:', error);
@@ -176,14 +235,84 @@
                 }
             }
 
-            function updateDisplay(fields) {
+            function updateDisplay(fields, projectItem) {
                 const url = fields.url || 'https://example.com';
                 activeTitle.textContent = fields.name;
                 activeLink.href = url;
                 activeFrame.src = url;
                 activeFrame.title = fields.name;
                 activeDesc.textContent = fields.description;
+
+                // Update star button
+                starCount.textContent = fields.stars_count || 0;
+                if (fields.is_starred) {
+                    starBtn.classList.add('is-starred');
+                } else {
+                    starBtn.classList.remove('is-starred');
+                }
+
+                // Show/hide edit and delete buttons
+                const editBtn = document.getElementById('edit-btn');
+                const deleteBtn = document.getElementById('delete-btn');
+                if (editBtn) editBtn.style.display = 'flex';
+                if (deleteBtn) deleteBtn.style.display = 'flex';
             }
+
+            // Edit button handler
+            window.editProject = function() {
+                if (currentProjectId) {
+                    window.location.href = `/projects/${currentProjectId}/update/`;
+                }
+            };
+
+            // Delete button handler
+            window.deleteProject = function() {
+                if (currentProjectId) {
+                    window.location.href = `/projects/${currentProjectId}/delete/`;
+                }
+            };
+
+            // Star button click handler
+            starBtn.addEventListener('click', async () => {
+                if (!currentProjectId) return;
+
+                try {
+                    const response = await fetch(`/projects/${currentProjectId}/star/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            alert('Please login to star projects!');
+                            window.location.href = '{% url "main:login" %}';
+                        }
+                        return;
+                    }
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        starCount.textContent = data.stars_count;
+                        if (data.is_starred) {
+                            starBtn.classList.add('is-starred');
+                        } else {
+                            starBtn.classList.remove('is-starred');
+                        }
+
+                        // Update current project data
+                        if (currentProjectData) {
+                            currentProjectData.fields.stars_count = data.stars_count;
+                            currentProjectData.fields.is_starred = data.is_starred;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to toggle star:', error);
+                }
+            });
 
             loadProjects();
         });

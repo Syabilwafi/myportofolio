@@ -263,13 +263,101 @@ main.blog {
     word-break: break-word;
 }
 
+/* Auth Pages */
+
+main.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 100px);
+    padding: 2rem 1.5rem;
+}
+
+.auth-section {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 0;
+}
+
+.auth-window {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 500px;
+    background-color: rgba(13, 26, 10, 0.95);
+    border: 2px solid var(--green-bright);
+    box-shadow: 0 0 15px rgba(126, 203, 32, 0.2);
+}
+
+.auth-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 3rem 2.5rem;
+    min-height: auto;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.auth-actions {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 1rem;
+}
+
+.auth-link {
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(181, 245, 66, 0.25);
+}
+
+.auth-link p {
+    margin: 0;
+    color: var(--green-glow);
+    font-size: 0.95rem;
+}
+
+.link-text {
+    color: var(--green-bright);
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+
+.link-text:hover {
+    color: #fff;
+    text-shadow: 0 0 8px rgba(126, 203, 32, 0.5);
+}
+
+.input-label {
+    color: var(--green-bright);
+    font-family: var(--font-pixel), sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.form-error-message {
+    margin: 0.5rem 0 0 0;
+    color: #ff6b6b;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
 /* Form Modals */
 
 .input-group {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.3rem;
+    gap: 0.5rem;
     width: 100%;
 }
 
@@ -513,5 +601,24 @@ main.blog {
     .post-item .post-tab {
         padding: 0.75rem 1rem;
         font-size: 0.85rem;
+    }
+
+    main.auth-container {
+        min-height: auto;
+        padding: 1.5rem 1rem;
+    }
+
+    .auth-body {
+        gap: 1.5rem;
+        padding: 2rem 1.5rem;
+    }
+
+    .auth-form {
+        gap: 1.5rem;
+    }
+
+    .retro-input,
+    .retro-textarea {
+        max-width: 100%;
     }
 }

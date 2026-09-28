@@ -12,6 +12,7 @@
         {% block meta %}{% endblock meta %}
     </head>
     <body>
+        {% csrf_token %}
         <nav class="navbar">
             <span class="nav-logo">SYBLWF</span>
             <button class="menu-toggle" id="menu-toggle">
@@ -23,6 +24,15 @@
                 <li><a href="/#about">About</a></li>
                 <li><a href="/blog">Blog</a></li>
                 <li><a href="/#contact">Contact</a></li>
+                {% if user.is_authenticated %}
+                    <li class="nav-user">
+                        <span class="nav-username">{{ user.username }}</span>
+                        <a href="{% url 'main:logout' %}" class="nav-logout">Logout</a>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'main:login' %}">Login</a></li>
+                    <li><a href="{% url 'main:register' %}">Register</a></li>
+                {% endif %}
             </ul>
         </nav>
 
