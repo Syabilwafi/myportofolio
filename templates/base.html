@@ -9,6 +9,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="stylesheet" href="{% static 'css/interactivity.css' %}">
         {% block meta %}{% endblock meta %}
     </head>
     <body>
@@ -41,6 +42,7 @@
         <div class="crt-flicker"></div>
 
         {% block content %}{% endblock content %}
+        <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
 
         <svg style="display: none;">
             <defs>
@@ -62,6 +64,7 @@
                 });
             }
         </script>
+        <script src="{% static 'js/toast.js' %}"></script>
         {% block scripts %}{% endblock scripts %}
     </body>
 </html>
