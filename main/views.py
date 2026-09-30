@@ -8,6 +8,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core import serializers
 from django.core.exceptions import PermissionDenied
+from django.db.models import Count
+from django.urls import reverse
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_http_methods
@@ -15,13 +17,10 @@ from django.views.decorators.http import require_http_methods
 from main.forms import ProjectForm, CustomUserCreationForm, CustomAuthenticationForm
 from main.models import Experience, Project
 
-
-# Helper function to check if user is superuser or editor
 def is_superuser_or_editor(user):
     return user.is_superuser or user.groups.filter(name='Editor').exists()
 
 
-# Decorator to check superuser or editor permission
 def superuser_or_editor_required(view_func):
     @wraps(view_func)
     def wrapped_view(request, *args, **kwargs):
@@ -33,7 +32,6 @@ def superuser_or_editor_required(view_func):
     return wrapped_view
 
 
-# Decorator to check superuser only
 def superuser_required(view_func):
     @wraps(view_func)
     def wrapped_view(request, *args, **kwargs):
@@ -51,7 +49,6 @@ def show_main(request):
     projects = Project.objects.all()
     last_login = request.COOKIES.get('last_login', 'Belum ada sesi login / Cookie tidak ditemukannya')
 
-    # Determine user permissions
     is_superuser = request.user.is_superuser
     is_editor = is_superuser_or_editor(request.user)
     can_edit = is_editor
@@ -77,6 +74,7 @@ def show_main(request):
         "can_delete": can_delete,
         "can_create": can_create,
         "can_star": can_star,
+        "project_form": ProjectForm(),
     }
     return render(request, "index.html", context)
 
@@ -134,8 +132,10 @@ def delete_project(request, project_id):
     }
     return render(request, 'confirm_delete.html', context)
 
+@require_http_methods(["GET"])
 def get_projects_json(request):
-    projects = Project.objects.all()
+    projects = Project.objects.annotate(stars_count=Count('starred_by'))
+    starred_ids = set(request.user.starred_projects.values_list('pk', flat=True)) if request.user.is_authenticated else set()
 
     name_query = request.GET.get('name', '').strip()
     if name_query:
@@ -150,12 +150,32 @@ def get_projects_json(request):
                 'name': project.name,
                 'url': project.url,
                 'description': project.description,
-                'stars_count': project.starred_by.count(),
-                'is_starred': project.starred_by.filter(pk=request.user.id).exists() if request.user.is_authenticated else False,
-            }
+                'stars_count': project.stars_count,
+                'is_starred': project.pk in starred_ids,
+            },
+            'update_url': reverse('main:update_project', args=[project.pk]),
+            'delete_url': reverse('main:delete_project', args=[project.pk]),
+            'star_url': reverse('main:toggle_star', args=[project.pk]),
         })
 
-    return HttpResponse(json.dumps(projects_list), content_type='application/json')
+    response = JsonResponse(projects_list, safe=False)
+    response['Cache-Control'] = 'private, no-store'
+    return response
+
+
+@require_http_methods(["POST"])
+def create_project_ajax(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'message': 'Please log in first.'}, status=401)
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'message': 'Only superusers can create projects.'}, status=403)
+    form = ProjectForm(request.POST)
+    if not form.is_valid():
+        return JsonResponse({'success': False, 'message': 'Please correct the form.',
+                             'errors': form.errors.get_json_data()}, status=400)
+    project = form.save()
+    return JsonResponse({'success': True, 'message': 'Project created successfully!',
+                         'id': str(project.pk)}, status=201)
 
 def register(request):
     form = CustomUserCreationForm(request.POST or None)
@@ -183,7 +203,7 @@ def login_view(request):
         response.set_cookie(
             'last_login',
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            max_age=60*60*24*7  # 7 days
+            max_age=60*60*24*7
         )
         return response
 
