@@ -31,37 +31,25 @@
                     </div>
                 </div>
 
-                <section id="experiences" class="experiences">
+                <section id="experiences" class="experiences" data-experiences-url="{% url 'main:get_experiences_json' %}" aria-label="Experience history">
                     <div class="section-container">
                         <div class="main-display-area">
                             <div class="experience terminal-window">
                                 <div class="window-header">
                                     <span class="window-title">EXPERIENCES</span>
                                 </div>
-                                <div class="window-body">
-                                    {% for exp in experiences %}
-                                        <div class="exp-group">
+                                <div class="window-body" id="experience-list" aria-live="polite" aria-busy="true">
+                                    {% for _ in "123" %}
+                                        <div class="exp-group experience-skeleton" aria-hidden="true">
                                             <div class="exp-row">
-                                                <span class="organization">{{ exp.title }}</span>
-                                                <span class="date">
-                                                    {{ exp.started_at|date:"M Y" }} -
-                                                    {% if exp.is_ongoing %}
-                                                        Present
-                                                    {% else %}
-                                                        {{ exp.ended_at|date:"M Y" }}
-                                                    {% endif %}
-                                                </span>
+                                                <span class="skeleton-line skeleton-title"></span>
+                                                <span class="skeleton-line skeleton-date"></span>
                                             </div>
-                                            <div class="role-row">
-                                                <p class="role">{{ exp.get_category_display }}</p>
-                                            </div>
+                                            <div class="role-row"><span class="skeleton-line skeleton-role"></span></div>
                                             <div class="description-row">
-                                                <p class="description">{{ exp.description }}</p>
+                                                <span class="skeleton-line skeleton-description"></span>
+                                                <span class="skeleton-line skeleton-description"></span>
                                             </div>
-                                        </div>
-                                    {% empty %}
-                                        <div class="exp-group">
-                                            <p class="role">No experience found.</p>
                                         </div>
                                     {% endfor %}
                                 </div>
@@ -85,7 +73,7 @@
                 <label for="project-search">Search projects</label>
                 <input id="project-search" type="search" class="retro-input" placeholder="Search by name" autocomplete="off">
                 <div class="projects-content" data-projects-url="{% url 'main:get_projects_json' %}">
-                    <div class="project-sidebar" id="project-sidebar">
+                    <div class="project-sidebar" id="project-sidebar" aria-live="polite" aria-busy="true">
                         <p class="no-projects">Loading projects...</p>
                     </div>
 
@@ -197,5 +185,6 @@
 {% endblock content %}
 
 {% block scripts %}
+    <script src="{% static 'js/experiences.js' %}"></script>
     <script src="{% static 'js/projects.js' %}"></script>
 {% endblock scripts %}

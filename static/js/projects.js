@@ -1,4 +1,4 @@
-(() => {
+const initializeProjects = () => {
     const sidebar = document.getElementById('project-sidebar');
     const display = document.getElementById('project-display');
     const search = document.getElementById('project-search');
@@ -10,7 +10,6 @@
     let requestVersion = 0;
     let debounceTimer;
 
-    // Only absolute HTTP(S) links are accepted, including for legacy database records.
     const safeUrl = value => {
         try {
             const url = new URL(value);
@@ -30,7 +29,7 @@
         else link.removeAttribute('href');
         frame.src = url || 'about:blank';
         frame.title = fields.name;
-        document.getElementById('star-count').textContent = fields.stars_count;
+        document.getElementById('star-count').textContent = fields.star_count ?? fields.stars_count;
         star.classList.toggle('is-starred', fields.is_starred);
         star.setAttribute('aria-pressed', String(fields.is_starred));
         ['edit-btn', 'delete-btn'].forEach(id => {
@@ -66,7 +65,7 @@
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'project-tab-btn';
-                // textContent escapes markup by creating a text node, never HTML.
+
                 button.textContent = `> ${item.fields.name}`;
                 button.classList.toggle('active', item.pk === selected.pk);
                 button.addEventListener('click', () => {
@@ -126,7 +125,7 @@
             if (event.target === modal && (event.clientX < bounds.left || event.clientX > bounds.right ||
                 event.clientY < bounds.top || event.clientY > bounds.bottom)) modal.close();
         });
-        // Native dialog supplies Escape dismissal, focus trapping, and focus restoration.
+
         form.addEventListener('submit', async event => {
             event.preventDefault();
             const submit = form.querySelector('[type=submit]');
@@ -163,4 +162,6 @@
         });
     }
     loadProjects();
-})();
+};
+
+document.addEventListener('DOMContentLoaded', initializeProjects);

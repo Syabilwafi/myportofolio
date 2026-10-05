@@ -45,8 +45,6 @@ def superuser_required(view_func):
 
 
 def show_main(request):
-    experiences = Experience.objects.all().order_by('-started_at')
-    projects = Project.objects.all()
     last_login = request.COOKIES.get('last_login', 'Belum ada sesi login / Cookie tidak ditemukannya')
 
     is_superuser = request.user.is_superuser
@@ -65,8 +63,6 @@ def show_main(request):
             "focusing on front-end development and UI/UX, while also contributing to startup operations and actively participating in organizations. I'm continuously "
             "developing my skills in programming and problem-solving, and I'm eager to contribute to impactful projects, grow as a technologist, and collaborate with others to create meaningful solutions."
         ),
-        "experiences": experiences,
-        "projects": projects,
         "last_login": last_login,
         "is_superuser": is_superuser,
         "is_editor": is_editor,
@@ -77,6 +73,23 @@ def show_main(request):
         "project_form": ProjectForm(),
     }
     return render(request, "index.html", context)
+
+
+@require_http_methods(["GET"])
+def get_experiences_json(request):
+    experiences = Experience.objects.all().order_by('-started_at')
+    payload = [{
+        'id': str(experience.pk),
+        'title': experience.title,
+        'organization': experience.organization,
+        'description': experience.description,
+        'category': experience.get_category_display(),
+        'started_at': experience.started_at.strftime('%b %Y'),
+        'ended_at': experience.ended_at.strftime('%b %Y') if experience.ended_at else None,
+    } for experience in experiences]
+    response = JsonResponse(payload, safe=False)
+    response['Cache-Control'] = 'private, no-store'
+    return response
 
 @superuser_required
 def create_project(request):
@@ -150,6 +163,7 @@ def get_projects_json(request):
                 'name': project.name,
                 'url': project.url,
                 'description': project.description,
+                'star_count': project.stars_count,
                 'stars_count': project.stars_count,
                 'is_starred': project.pk in starred_ids,
             },
@@ -233,8 +247,10 @@ def toggle_star(request, project_id):
         project.starred_by.add(request.user)
         is_starred = True
 
+    star_count = project.starred_by.count()
     return JsonResponse({
         'success': True,
         'is_starred': is_starred,
-        'stars_count': project.starred_by.count()
+        'star_count': star_count,
+        'stars_count': star_count,
     })
