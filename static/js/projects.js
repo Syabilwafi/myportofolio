@@ -1,7 +1,7 @@
 const initializeProjects = () => {
     const sidebar = document.getElementById('project-sidebar');
     const display = document.getElementById('project-display');
-    const search = document.getElementById('project-search');
+    const search = document.getElementById('search-input');
     const star = document.getElementById('star-btn');
     const modal = document.getElementById('project-modal');
     const form = document.getElementById('project-create-form');
@@ -43,9 +43,16 @@ const initializeProjects = () => {
         controller = new AbortController();
         const version = ++requestVersion;
         sidebar.setAttribute('aria-busy', 'true');
+        sidebar.replaceChildren();
+        const loading = document.createElement('p');
+        loading.className = 'no-projects';
+        loading.textContent = 'Loading projects...';
+        sidebar.append(loading);
+        display.style.display = 'none';
+        current = null;
         try {
             const url = new URL(document.querySelector('[data-projects-url]').dataset.projectsUrl, location.origin);
-            url.searchParams.set('name', search.value.trim());
+            url.searchParams.set('q', search.value.trim());
             const response = await fetch(url, { signal: controller.signal, credentials: 'same-origin' });
             if (!response.ok) throw new Error('Unable to load projects. Please try again.');
             const projects = await response.json();
@@ -80,7 +87,11 @@ const initializeProjects = () => {
         } catch (error) {
             if (error.name !== 'AbortError' && version === requestVersion) {
                 showToast(error.message, 'error');
-                if (!sidebar.children.length || !current) sidebar.textContent = 'Unable to load projects. Try searching again.';
+                sidebar.replaceChildren();
+                const message = document.createElement('p');
+                message.className = 'no-projects';
+                message.textContent = 'Unable to load projects. Try searching again.';
+                sidebar.append(message);
             }
             return false;
         } finally {

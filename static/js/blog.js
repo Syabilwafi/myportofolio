@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const blog = document.querySelector('.blog');
+    const search = document.getElementById('search-input');
     const postList = document.getElementById('post-list');
     const article = document.querySelector('.post-article');
     const activePost = document.getElementById('active-post');
@@ -14,6 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('create-post-modal');
     const openBtn = document.getElementById('open-modal-btn');
     const closeBtn = document.getElementById('close-modal-btn');
+    let controller;
+    let requestVersion = 0;
+    let debounceTimer;
 
     const renderComments = comments => {
         commentsContainer.replaceChildren();
@@ -59,24 +63,47 @@ document.addEventListener('DOMContentLoaded', () => {
         blogSidebar.classList.remove('show');
     };
 
-    const loadPosts = async () => {
+    const loadPosts = async (query = '') => {
+        controller?.abort();
+        controller = new AbortController();
+        const version = ++requestVersion;
+        postList.setAttribute('aria-busy', 'true');
+        article.setAttribute('aria-busy', 'true');
+        activePost.hidden = true;
+        commentArea.hidden = true;
+        article.querySelector('.no-posts')?.remove();
+        const loading = document.createElement('p');
+        loading.className = 'no-posts';
+        loading.textContent = 'Loading posts...';
+        article.prepend(loading);
+        postList.replaceChildren();
+        const loadingItem = document.createElement('li');
+        loadingItem.className = 'no-posts-item';
+        const loadingText = document.createElement('p');
+        loadingText.className = 'no-posts';
+        loadingText.textContent = 'Loading posts...';
+        loadingItem.append(loadingText);
+        postList.append(loadingItem);
         try {
-            const response = await fetch(blog.dataset.postsUrl, { credentials: 'same-origin' });
+            const url = new URL(blog.dataset.postsUrl, location.origin);
+            url.searchParams.set('q', query);
+            const response = await fetch(url, { signal: controller.signal, credentials: 'same-origin' });
             if (!response.ok) throw new Error('Unable to load posts. Please try again.');
             const posts = await response.json();
+            if (version !== requestVersion) return;
             postList.replaceChildren();
             article.querySelector('.no-posts')?.remove();
 
             if (!posts.length) {
                 const message = document.createElement('p');
                 message.className = 'no-posts';
-                message.textContent = '> Nothing has been posted yet.';
+                message.textContent = query ? 'Data tidak ditemukan.' : '> Nothing has been posted yet.';
                 article.prepend(message);
                 const item = document.createElement('li');
                 item.className = 'no-posts-item';
                 const empty = document.createElement('p');
                 empty.className = 'no-posts';
-                empty.textContent = 'Nothing has been posted yet.';
+                empty.textContent = query ? 'Data tidak ditemukan.' : 'Nothing has been posted yet.';
                 item.append(empty);
                 postList.append(item);
                 windowTitle.textContent = 'BLOG';
@@ -126,10 +153,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             selectPost(posts[0]);
         } catch (error) {
+            if (error.name === 'AbortError' || version !== requestVersion) return;
             const message = document.createElement('p');
             message.className = 'no-posts';
             message.textContent = 'Unable to load posts. Please try again.';
-            article.replaceChildren(message);
+            article.querySelector('.no-posts')?.remove();
+            article.prepend(message);
             postList.replaceChildren();
             const item = document.createElement('li');
             item.className = 'no-posts-item';
@@ -139,10 +168,19 @@ document.addEventListener('DOMContentLoaded', () => {
             item.append(sidebarMessage);
             postList.append(item);
         } finally {
-            article.setAttribute('aria-busy', 'false');
-            postList.setAttribute('aria-busy', 'false');
+            if (version === requestVersion) {
+                article.setAttribute('aria-busy', 'false');
+                postList.setAttribute('aria-busy', 'false');
+            }
         }
     };
+
+    search.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        controller?.abort();
+        ++requestVersion;
+        debounceTimer = setTimeout(() => loadPosts(search.value.trim()), 400);
+    });
 
     sidebarToggleBtn?.addEventListener('click', () => blogSidebar?.classList.toggle('show'));
     openBtn?.addEventListener('click', () => {

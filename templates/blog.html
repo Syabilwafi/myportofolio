@@ -57,6 +57,10 @@
 
                     <aside class="blog-sidebar">
                         <nav aria-label="Blog posts navigation">
+                            <div class="input-group">
+                                <label for="search-input" class="input-label">Search posts</label>
+                                <input id="search-input" type="text" class="retro-input" placeholder="Search by title or content" autocomplete="off">
+                            </div>
                             <ul class="post-list" id="post-list" data-can-delete="{{ can_delete|yesno:'true,false' }}" data-delete-url="{% url 'blog:delete_post' %}" aria-live="polite" aria-busy="true">
                                 <li class="no-posts-item"><p class="no-posts">Loading posts...</p></li>
                             </ul>

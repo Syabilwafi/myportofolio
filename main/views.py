@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core import serializers
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.urls import reverse
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -150,9 +150,9 @@ def get_projects_json(request):
     projects = Project.objects.annotate(stars_count=Count('starred_by'))
     starred_ids = set(request.user.starred_projects.values_list('pk', flat=True)) if request.user.is_authenticated else set()
 
-    name_query = request.GET.get('name', '').strip()
-    if name_query:
-        projects = projects.filter(name__icontains=name_query)
+    query = request.GET.get('q', request.GET.get('name', '')).strip()
+    if query:
+        projects = projects.filter(Q(name__icontains=query) | Q(description__icontains=query))
 
     projects_list = []
     for project in projects:

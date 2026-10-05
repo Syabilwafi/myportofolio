@@ -70,8 +70,8 @@
                         <button id="open-project-modal" type="button" class="btn btn-filled btn-sm">+ Add Project</button>
                     {% endif %}
                 </div>
-                <label for="project-search">Search projects</label>
-                <input id="project-search" type="search" class="retro-input" placeholder="Search by name" autocomplete="off">
+                <label for="search-input">Search projects</label>
+                <input id="search-input" type="text" class="retro-input" placeholder="Search by name or description" autocomplete="off">
                 <div class="projects-content" data-projects-url="{% url 'main:get_projects_json' %}">
                     <div class="project-sidebar" id="project-sidebar" aria-live="polite" aria-busy="true">
                         <p class="no-projects">Loading projects...</p>

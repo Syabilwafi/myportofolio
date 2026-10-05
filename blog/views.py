@@ -35,6 +35,9 @@ def show_blog(request):
 @require_GET
 def get_posts_json(request):
     posts = Post.objects.prefetch_related('comment_set').all().order_by('-created_at')
+    query = request.GET.get('q', '').strip()
+    if query:
+        posts = posts.filter(title__icontains=query) | posts.filter(content__icontains=query)
     payload = [{
         'id': str(post.pk),
         'title': post.title,
