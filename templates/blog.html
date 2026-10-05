@@ -87,7 +87,7 @@
                         <button id="close-modal-btn" type="button" class="modal-close-btn" aria-label="Close modal">X</button>
                     </header>
 
-                    <form method="POST" action="{% url 'blog:create_post' %}" class="modal-form">
+                    <form id="create-post-form" method="POST" action="{% url 'blog:create_post_ajax' %}" class="modal-form">
                         {% csrf_token %}
 
                         <div class="input-group">
@@ -112,6 +112,7 @@
                             ></textarea>
                         </div>
 
+                        <div id="create-post-errors" role="alert" tabindex="-1"></div>
                         <div class="modal-actions">
                             <button type="submit" class="retro-btn submit-btn">Send Message</button>
                         </div>

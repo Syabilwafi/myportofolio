@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('create-post-modal');
     const openBtn = document.getElementById('open-modal-btn');
     const closeBtn = document.getElementById('close-modal-btn');
+    const createForm = document.getElementById('create-post-form');
     let controller;
     let requestVersion = 0;
     let debounceTimer;
@@ -190,6 +191,46 @@ document.addEventListener('DOMContentLoaded', () => {
     closeBtn?.addEventListener('click', () => {
         modal.classList.add('hidden');
         modal.setAttribute('aria-hidden', 'true');
+    });
+    createForm?.addEventListener('submit', async event => {
+        event.preventDefault();
+        const submit = createForm.querySelector('[type=submit]');
+        const errors = document.getElementById('create-post-errors');
+        if (submit.disabled) return;
+        submit.disabled = true;
+        errors.textContent = '';
+        try {
+            const response = await fetch(createForm.action, {
+                method: 'POST',
+                credentials: 'same-origin',
+                body: new FormData(createForm),
+                headers: { 'X-CSRFToken': createForm.elements.csrfmiddlewaretoken.value },
+            });
+            if (!response.headers.get('content-type')?.includes('application/json')) {
+                throw new Error('Request rejected. Reload the page to renew your session and try again.');
+            }
+            const data = await response.json();
+            if (!response.ok) {
+                errors.textContent = Object.entries(data.errors || {}).flatMap(([field, items]) =>
+                    items.map(item => `${field}: ${item.message}`)).join('\n') || data.message;
+                errors.focus();
+                showToast(data.message || 'Post could not be created.', 'error');
+                return;
+            }
+
+            createForm.reset();
+            modal.classList.add('hidden');
+            modal.setAttribute('aria-hidden', 'true');
+            clearTimeout(debounceTimer);
+            search.value = '';
+            showToast(data.message);
+            await loadPosts('');
+        } catch (error) {
+            errors.textContent = error.message;
+            showToast(error.message, 'error');
+        } finally {
+            submit.disabled = false;
+        }
     });
     window.addEventListener('click', event => {
         if (event.target === modal) {

@@ -102,3 +102,31 @@ def create_comment(request):
             comment.save()
             messages.success(request, 'Comment posted successfully!')
     return redirect('blog:show_blog')
+
+
+@require_POST
+def create_post_ajax(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'message': 'Please log in first.'}, status=401)
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'message': 'Only superusers can create posts.'}, status=403)
+
+    form = PostForm(request.POST)
+    if not form.is_valid():
+        return JsonResponse({
+            'success': False,
+            'message': 'Please correct the form.',
+            'errors': form.errors.get_json_data(),
+        }, status=400)
+
+    post = form.save()
+    return JsonResponse({
+        'success': True,
+        'message': 'Post created successfully!',
+        'post': {
+            'id': str(post.pk),
+            'title': post.title,
+            'content': post.content,
+            'created_at': post.created_at.strftime('%b %d, %Y'),
+        },
+    }, status=201)
