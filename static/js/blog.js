@@ -211,23 +211,31 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const data = await response.json();
             if (!response.ok) {
-                errors.textContent = Object.entries(data.errors || {}).flatMap(([field, items]) =>
-                    items.map(item => `${field}: ${item.message}`)).join('\n') || data.message;
+                const validationErrors = Object.entries(data.errors || {}).flatMap(([field, items]) =>
+                    items.map(item => `${field}: ${item.message}`)).join('\n');
+                const message = response.status === 400
+                    ? validationErrors || data.message || 'Please correct the form.'
+                    : response.status === 403
+                        ? data.message || 'You do not have permission to create posts.'
+                        : 'Terjadi kesalahan pada sistem. Silakan coba lagi.';
+                errors.textContent = message;
                 errors.focus();
-                showToast(data.message || 'Post could not be created.', 'error');
+                showToast(message, 'error');
                 return;
             }
+            if (response.status !== 201) throw new Error('Terjadi kesalahan pada sistem. Silakan coba lagi.');
 
             createForm.reset();
             modal.classList.add('hidden');
             modal.setAttribute('aria-hidden', 'true');
             clearTimeout(debounceTimer);
             search.value = '';
-            showToast(data.message);
+            showToast(data.message, 'success');
             await loadPosts('');
         } catch (error) {
-            errors.textContent = error.message;
-            showToast(error.message, 'error');
+            const message = 'Terjadi kesalahan pada sistem. Silakan coba lagi.';
+            errors.textContent = message;
+            showToast(message, 'error');
         } finally {
             submit.disabled = false;
         }
