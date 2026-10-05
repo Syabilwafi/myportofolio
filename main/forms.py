@@ -7,16 +7,22 @@ from django.utils.html import strip_tags
 from urllib.parse import urlsplit
 
 class ProjectForm(ModelForm):
-    def clean(self):
-        cleaned = super().clean()
-        for field in ('name', 'description'):
-            value = cleaned.get(field, '')
-            if strip_tags(value) != value:
-                self.add_error(field, 'Please enter plain text without HTML tags.')
-        return cleaned
+    def clean_name(self):
+        name = self.cleaned_data['name']
+        if strip_tags(name) != name:
+            raise ValidationError('Please enter plain text without HTML tags.')
+        return name
+
+    def clean_description(self):
+        description = self.cleaned_data.get('description', '')
+        if strip_tags(description) != description:
+            raise ValidationError('Please enter plain text without HTML tags.')
+        return description
 
     def clean_url(self):
         url = self.cleaned_data.get('url')
+        if url and strip_tags(url) != url:
+            raise ValidationError('Please enter a valid project URL.')
         if url and urlsplit(url).scheme.lower() not in ('http', 'https'):
             raise ValidationError('Use an HTTP or HTTPS project URL.')
         return url

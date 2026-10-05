@@ -25,9 +25,6 @@
                                 <div class="input-group">
                                     <label for="{{ field.id_for_label }}" class="input-label">{{ field.label }}</label>
                                     {{ field }}
-                                    {% if field.help_text %}
-                                        <span class="input-hint">{{ field.help_text|safe }}</span>
-                                    {% endif %}
                                     {% for error in field.errors %}
                                         <p class="form-error-message">&gt; {{ error }}</p>
                                     {% endfor %}

@@ -409,6 +409,30 @@ body {
     flex: 1 1 450px;
 }
 
+.experience-skeleton .skeleton-line {
+    display: block;
+    height: 1em;
+    border-radius: 2px;
+    background: linear-gradient(90deg, rgba(126, 203, 32, 0.08), rgba(126, 203, 32, 0.24), rgba(126, 203, 32, 0.08));
+    background-size: 200% 100%;
+    animation: experience-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.experience-skeleton .exp-row { align-items: center; }
+.experience-skeleton .skeleton-title { width: 42%; }
+.experience-skeleton .skeleton-date { width: 24%; }
+.experience-skeleton .skeleton-role { width: 18%; }
+.experience-skeleton .skeleton-description { width: 100%; margin: 0.6rem 0; }
+.experience-skeleton .skeleton-description:last-child { width: 72%; }
+
+@keyframes experience-skeleton-shimmer {
+    to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .experience-skeleton .skeleton-line { animation: none; }
+}
+
 .photo-frame {
     --b: 0.4rem;
     --w: 2rem;

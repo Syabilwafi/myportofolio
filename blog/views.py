@@ -1,9 +1,10 @@
 # views.py
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.contrib import messages
+from django.utils.timesince import timesince
 from .models import Post, Comment
 from .forms import PostForm, CommentForm
 
@@ -14,8 +15,6 @@ def is_superuser_or_editor(user):
 
 
 def show_blog(request):
-    posts = Post.objects.prefetch_related('comment_set').all().order_by('-created_at')
-
     # Determine user permissions
     can_create = request.user.is_superuser
     can_edit = is_superuser_or_editor(request.user)
@@ -23,7 +22,6 @@ def show_blog(request):
     can_comment = True  # Anyone can comment
 
     context = {
-        'posts': posts,
         'comment_form': CommentForm(),
         'name': 'Syabil Wafi',
         'can_create': can_create,
@@ -32,6 +30,28 @@ def show_blog(request):
         'can_comment': can_comment,
     }
     return render(request, 'blog.html', context)
+
+
+@require_GET
+def get_posts_json(request):
+    posts = Post.objects.prefetch_related('comment_set').all().order_by('-created_at')
+    query = request.GET.get('q', '').strip()
+    if query:
+        posts = posts.filter(title__icontains=query) | posts.filter(content__icontains=query)
+    payload = [{
+        'id': str(post.pk),
+        'title': post.title,
+        'content': post.content,
+        'created_at': post.created_at.strftime('%b %d, %Y'),
+        'comments': [{
+            'username': comment.username,
+            'content': comment.content,
+            'time': f'{timesince(comment.created_at)} ago',
+        } for comment in post.comment_set.all()],
+    } for post in posts]
+    response = JsonResponse(payload, safe=False)
+    response['Cache-Control'] = 'private, no-store'
+    return response
 
 
 @login_required(login_url='/login/')
@@ -82,3 +102,31 @@ def create_comment(request):
             comment.save()
             messages.success(request, 'Comment posted successfully!')
     return redirect('blog:show_blog')
+
+
+@require_POST
+def create_post_ajax(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'message': 'Please log in first.'}, status=401)
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'message': 'Only superusers can create posts.'}, status=403)
+
+    form = PostForm(request.POST)
+    if not form.is_valid():
+        return JsonResponse({
+            'success': False,
+            'message': 'Please correct the form.',
+            'errors': form.errors.get_json_data(),
+        }, status=400)
+
+    post = form.save()
+    return JsonResponse({
+        'success': True,
+        'message': 'Post created successfully!',
+        'post': {
+            'id': str(post.pk),
+            'title': post.title,
+            'content': post.content,
+            'created_at': post.created_at.strftime('%b %d, %Y'),
+        },
+    }, status=201)

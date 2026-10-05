@@ -1,7 +1,7 @@
-(() => {
+const initializeProjects = () => {
     const sidebar = document.getElementById('project-sidebar');
     const display = document.getElementById('project-display');
-    const search = document.getElementById('project-search');
+    const search = document.getElementById('search-input');
     const star = document.getElementById('star-btn');
     const modal = document.getElementById('project-modal');
     const form = document.getElementById('project-create-form');
@@ -10,7 +10,6 @@
     let requestVersion = 0;
     let debounceTimer;
 
-    // Only absolute HTTP(S) links are accepted, including for legacy database records.
     const safeUrl = value => {
         try {
             const url = new URL(value);
@@ -30,7 +29,7 @@
         else link.removeAttribute('href');
         frame.src = url || 'about:blank';
         frame.title = fields.name;
-        document.getElementById('star-count').textContent = fields.stars_count;
+        document.getElementById('star-count').textContent = fields.star_count ?? fields.stars_count;
         star.classList.toggle('is-starred', fields.is_starred);
         star.setAttribute('aria-pressed', String(fields.is_starred));
         ['edit-btn', 'delete-btn'].forEach(id => {
@@ -44,9 +43,16 @@
         controller = new AbortController();
         const version = ++requestVersion;
         sidebar.setAttribute('aria-busy', 'true');
+        sidebar.replaceChildren();
+        const loading = document.createElement('p');
+        loading.className = 'no-projects';
+        loading.textContent = 'Loading projects...';
+        sidebar.append(loading);
+        display.style.display = 'none';
+        current = null;
         try {
             const url = new URL(document.querySelector('[data-projects-url]').dataset.projectsUrl, location.origin);
-            url.searchParams.set('name', search.value.trim());
+            url.searchParams.set('q', search.value.trim());
             const response = await fetch(url, { signal: controller.signal, credentials: 'same-origin' });
             if (!response.ok) throw new Error('Unable to load projects. Please try again.');
             const projects = await response.json();
@@ -66,7 +72,7 @@
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'project-tab-btn';
-                // textContent escapes markup by creating a text node, never HTML.
+
                 button.textContent = `> ${item.fields.name}`;
                 button.classList.toggle('active', item.pk === selected.pk);
                 button.addEventListener('click', () => {
@@ -81,7 +87,11 @@
         } catch (error) {
             if (error.name !== 'AbortError' && version === requestVersion) {
                 showToast(error.message, 'error');
-                if (!sidebar.children.length || !current) sidebar.textContent = 'Unable to load projects. Try searching again.';
+                sidebar.replaceChildren();
+                const message = document.createElement('p');
+                message.className = 'no-projects';
+                message.textContent = 'Unable to load projects. Try searching again.';
+                sidebar.append(message);
             }
             return false;
         } finally {
@@ -126,7 +136,7 @@
             if (event.target === modal && (event.clientX < bounds.left || event.clientX > bounds.right ||
                 event.clientY < bounds.top || event.clientY > bounds.bottom)) modal.close();
         });
-        // Native dialog supplies Escape dismissal, focus trapping, and focus restoration.
+
         form.addEventListener('submit', async event => {
             event.preventDefault();
             const submit = form.querySelector('[type=submit]');
@@ -144,23 +154,33 @@
                 }
                 const data = await response.json();
                 if (!response.ok) {
-                    errors.textContent = Object.entries(data.errors || {}).flatMap(([field, items]) =>
-                        items.map(item => `${field}: ${item.message}`)).join('\n') || data.message;
+                    const validationErrors = Object.entries(data.errors || {}).flatMap(([field, items]) =>
+                        items.map(item => `${field}: ${item.message}`)).join('\n');
+                    const message = response.status === 400
+                        ? validationErrors || data.message || 'Please correct the form.'
+                        : response.status === 403
+                            ? data.message || 'You do not have permission to add a project.'
+                            : 'Terjadi kesalahan pada sistem. Silakan coba lagi.';
+                    errors.textContent = message;
                     errors.focus();
-                    showToast(data.message || 'Project could not be created.', 'error');
+                    showToast(message, 'error');
                     return;
                 }
+                if (response.status !== 201) throw new Error('Terjadi kesalahan pada sistem. Silakan coba lagi.');
                 form.reset();
                 modal.close();
                 clearTimeout(debounceTimer);
                 search.value = '';
-                showToast(data.message);
+                showToast(data.message, 'success');
                 await loadProjects(data.id);
             } catch (error) {
-                errors.textContent = error.message;
-                showToast(error.message, 'error');
+                const message = 'Terjadi kesalahan pada sistem. Silakan coba lagi.';
+                errors.textContent = message;
+                showToast(message, 'error');
             } finally { submit.disabled = false; }
         });
     }
     loadProjects();
-})();
+};
+
+document.addEventListener('DOMContentLoaded', initializeProjects);

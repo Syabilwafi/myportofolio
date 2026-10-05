@@ -8,7 +8,7 @@
 {% endblock meta %}
 
 {% block content %}
-<main class="blog">
+<main class="blog" data-posts-url="{% url 'blog:get_posts_json' %}">
     <section id="post" class="post">
         <div class="section-container">
             <div class="blog-window terminal-window">
@@ -18,13 +18,7 @@
                         <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" type="button" aria-label="Toggle posts menu">
                             ☰
                         </button>
-                        {% if posts %}
-                            {% with first_post=posts|first %}
-                                <span id="window-title" class="window-title">{{ first_post.title }}</span>
-                            {% endwith %}
-                        {% else %}
-                            <span class="window-title">BLOG</span>
-                        {% endif %}
+                        <span id="window-title" class="window-title">BLOG</span>
                     </div>
                     <button type="button" class="window-close-btn" aria-label="Close">X</button>
                 </header>
@@ -32,99 +26,43 @@
                 <div class="blog-body">
 
                     <div class="blog-content">
-                        <article class="post-article">
-                            {% if posts %}
-                                {% with first_post=posts|first %}
-                                    <div class="post-content">
-                                        <p id="post-date" class="post-date">&gt; Posted on {{ first_post.created_at|date:"M d, Y" }}</p>
-                                        <div id="post-text" class="post-text">{{ first_post.content }}</div>
+                        <article class="post-article" aria-live="polite" aria-busy="true">
+                            <p class="no-posts">&gt; Loading posts...</p>
+                            <div class="post-content" id="active-post" hidden>
+                                <p id="post-date" class="post-date"></p>
+                                <div id="post-text" class="post-text"></div>
+                            </div>
+
+                            <div class="comment-form-container" id="comment-area" hidden>
+                                <form method="POST" action="{% url 'blog:create_comment' %}" class="comment-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="post_id" id="comment-post-id" value="">
+
+                                    <div class="input-group">
+                                        <input type="text" name="username" class="retro-input" placeholder="Your name">
+                                        <span class="input-hint">Leave blank for anonymous</span>
                                     </div>
 
-                                    <div class="comment-form-container">
-                                        <form method="POST" action="{% url 'blog:create_comment' %}" class="comment-form">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="post_id" id="comment-post-id" value="{{ first_post.id }}">
-
-                                            <div class="input-group">
-                                                <input
-                                                    type="text"
-                                                    name="username"
-                                                    class="retro-input"
-                                                    placeholder="Your name"
-                                                >
-                                                <span class="input-hint">Leave blank for anonymous</span>
-                                            </div>
-
-                                            <div class="input-group">
-                                                <textarea
-                                                    name="content"
-                                                    class="retro-textarea"
-                                                    placeholder="Add a comment"
-                                                    rows="3"
-                                                    required
-                                                ></textarea>
-                                            </div>
-
-                                            <button type="submit" class="retro-btn submit-comment-btn">Submit Comment</button>
-                                        </form>
-
-                                        <div id="comments-container" class="comment-list">
-                                            {% for comment in first_post.comment_set.all %}
-                                                <div class="comment-item">
-                                                    <span class="comment-author-name">{{ comment.username }}</span>
-                                                    <div class="comment-row">
-                                                        <span class="comment-text">{{ comment.content }}</span>
-                                                        <span class="comment-time">{{ comment.created_at|timesince }} ago</span>
-                                                    </div>
-                                                </div>
-                                            {% empty %}
-                                                <p class="no-comments-text" style="color: rgba(181, 245, 66, 0.5); margin-top: 1rem;">No comments yet.</p>
-                                            {% endfor %}
-                                        </div>
+                                    <div class="input-group">
+                                        <textarea name="content" class="retro-textarea" placeholder="Add a comment" rows="3" required></textarea>
                                     </div>
-                                {% endwith %}
-                            {% else %}
-                                <p class="no-posts">&gt; Nothing has been posted yet.</p>
-                            {% endif %}
+
+                                    <button type="submit" class="retro-btn submit-comment-btn">Submit Comment</button>
+                                </form>
+
+                                <div id="comments-container" class="comment-list"></div>
+                            </div>
                         </article>
                     </div>
 
                     <aside class="blog-sidebar">
                         <nav aria-label="Blog posts navigation">
-                            <ul class="post-list">
-                                {% for post in posts %}
-                                    <li class="post-item {% if forloop.first %}active{% endif %}">
-                                        <a href="#"
-                                           class="post-tab"
-                                           data-id="{{ post.id }}"
-                                           data-title="{{ post.title }}"
-                                           data-date="{{ post.created_at|date:'M d, Y' }}"
-                                           data-content="{{ post.content }}"
-                                           data-comments='[
-                                               {% for c in post.comment_set.all %}
-                                                   {
-                                                       "username": "{{ c.username|escapejs }}",
-                                                       "content": "{{ c.content|escapejs }}",
-                                                       "time": "{{ c.created_at|timesince|escapejs }} ago"
-                                                   }{% if not forloop.last %},{% endif %}
-                                               {% endfor %}
-                                           ]'>
-                                            {{ post.title }}
-                                        </a>
-
-                                        {% if can_delete %}
-                                            <form method="POST" action="{% url 'blog:delete_post' %}" class="delete-form" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this post?');">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="post_id" value="{{ post.id }}">
-                                                <button type="submit" class="delete-btn">X</button>
-                                            </form>
-                                        {% endif %}
-                                    </li>
-                                {% empty %}
-                                    <li class="no-posts-item">
-                                        <p class="no-posts">Nothing has been posted yet.</p>
-                                    </li>
-                                {% endfor %}
+                            <div class="input-group">
+                                <label for="search-input" class="input-label">Search posts</label>
+                                <input id="search-input" type="text" class="retro-input" placeholder="Search by title or content" autocomplete="off">
+                            </div>
+                            <ul class="post-list" id="post-list" data-can-delete="{{ can_delete|yesno:'true,false' }}" data-delete-url="{% url 'blog:delete_post' %}" aria-live="polite" aria-busy="true">
+                                <li class="no-posts-item"><p class="no-posts">Loading posts...</p></li>
                             </ul>
                         </nav>
 
@@ -149,7 +87,7 @@
                         <button id="close-modal-btn" type="button" class="modal-close-btn" aria-label="Close modal">X</button>
                     </header>
 
-                    <form method="POST" action="{% url 'blog:create_post' %}" class="modal-form">
+                    <form id="create-post-form" method="POST" action="{% url 'blog:create_post_ajax' %}" class="modal-form">
                         {% csrf_token %}
 
                         <div class="input-group">
@@ -174,6 +112,7 @@
                             ></textarea>
                         </div>
 
+                        <div id="create-post-errors" role="alert" tabindex="-1"></div>
                         <div class="modal-actions">
                             <button type="submit" class="retro-btn submit-btn">Send Message</button>
                         </div>
@@ -189,90 +128,5 @@
 {% endblock content %}
 
 {% block scripts %}
+    <script src="{% static 'js/blog.js' %}"></script>
 {% endblock scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const postTabs = document.querySelectorAll('.post-tab');
-        const windowTitle = document.getElementById('window-title');
-        const postDate = document.getElementById('post-date');
-        const postText = document.getElementById('post-text');
-        const commentPostIdInput = document.getElementById('comment-post-id');
-        const commentsContainer = document.getElementById('comments-container');
-
-        const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
-        const blogSidebar = document.querySelector('.blog-sidebar');
-
-        const modal = document.getElementById('create-post-modal');
-        const openBtn = document.getElementById('open-modal-btn');
-        const closeBtn = document.getElementById('close-modal-btn');
-
-        sidebarToggleBtn?.addEventListener('click', () => {
-            blogSidebar?.classList.toggle('show');
-        });
-
-        const renderComments = (comments) => {
-            if (!commentsContainer) return;
-
-            if (!comments || comments.length === 0) {
-                commentsContainer.innerHTML = '<p class="no-comments-text" style="color: rgba(181, 245, 66, 0.5); margin-top: 1rem;">No comments yet.</p>';
-                return;
-            }
-
-            commentsContainer.innerHTML = comments.map(c => `
-                <div class="comment-item">
-                    <span class="comment-author-name">${c.username}</span>
-                    <div class="comment-row">
-                        <span class="comment-text">${c.content}</span>
-                        <span class="comment-time">${c.time}</span>
-                    </div>
-                </div>
-            `).join('');
-        };
-
-        postTabs.forEach(tab => {
-            tab.addEventListener('click', (e) => {
-                e.preventDefault();
-
-                document.querySelectorAll('.post-item').forEach(item => item.classList.remove('active'));
-                tab.parentElement.classList.add('active');
-
-                const { id, title, date, content, comments } = tab.dataset;
-
-                if (windowTitle) windowTitle.textContent = title;
-                if (postDate) postDate.textContent = `> Posted on ${date}`;
-                if (postText) postText.textContent = content;
-                if (commentPostIdInput) commentPostIdInput.value = id;
-
-                blogSidebar?.classList.remove('show');
-
-                try {
-                    const parsedComments = JSON.parse(comments || '[]');
-                    renderComments(parsedComments);
-                } catch (err) {
-                    renderComments([]);
-                }
-            });
-        });
-
-        const openModal = () => {
-            modal.classList.remove('hidden');
-            modal.setAttribute('aria-hidden', 'false');
-        };
-
-        const closeModal = () => {
-            modal.classList.add('hidden');
-            modal.setAttribute('aria-hidden', 'true');
-        };
-
-        openBtn?.addEventListener('click', openModal);
-        closeBtn?.addEventListener('click', closeModal);
-
-        window.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
-    });
-
-    sidebarToggleBtn?.addEventListener('click', () => {
-        blogSidebar?.classList.toggle('show');
-    });
-</script>

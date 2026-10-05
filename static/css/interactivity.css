@@ -11,9 +11,10 @@
     overflow-wrap: anywhere;
 }
 .toast.is-visible { opacity: 1; transform: translateY(0); }
-.toast-error { border-color: #ff7474; }
+.toast-success { background: #17300f; border-color: #7ecb20; }
+.toast-error { background: #351616; border-color: #ff7474; }
 .toast-info { border-color: #83bfff; }
-#project-search { display: block; width: 100%; margin: .75rem 0 1.5rem; padding: .75rem; }
+#search-input { display: block; width: 100%; margin: .75rem 0 1.5rem; padding: .75rem; }
 #project-modal {
     width: min(32rem, calc(100vw - 2rem)); max-height: 85vh;
     padding: 1.5rem; border: 2px solid #7ecb20; border-radius: .5rem;
