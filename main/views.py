@@ -1,51 +1,25 @@
-import json
 from datetime import datetime
-from functools import wraps
 
 from django.contrib import messages
 from django.contrib.auth import login, logout
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.core import serializers
-from django.core.exceptions import PermissionDenied
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
 from django.urls import reverse
-from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
-from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
 from main.forms import ProjectForm, CustomUserCreationForm, CustomAuthenticationForm
 from main.models import Experience, Project
-
-def is_superuser_or_editor(user):
-    return user.is_superuser or user.groups.filter(name='Editor').exists()
-
-
-def superuser_or_editor_required(view_func):
-    @wraps(view_func)
-    def wrapped_view(request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return redirect('main:login')
-        if not is_superuser_or_editor(request.user):
-            return HttpResponseForbidden("You do not have permission to perform this action.")
-        return view_func(request, *args, **kwargs)
-    return wrapped_view
-
-
-def superuser_required(view_func):
-    @wraps(view_func)
-    def wrapped_view(request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return redirect('main:login')
-        if not request.user.is_superuser:
-            return HttpResponseForbidden("You do not have permission to perform this action.")
-        return view_func(request, *args, **kwargs)
-    return wrapped_view
-
-
+from main.constants import ANONYMOUS_LOGIN_MESSAGE, PROFILE
+from main.permissions import (
+    is_superuser_or_editor,
+    superuser_or_editor_required,
+    superuser_required,
+)
 
 def show_main(request):
-    last_login = request.COOKIES.get('last_login', 'Belum ada sesi login / Cookie tidak ditemukannya')
+    last_login = request.COOKIES.get('last_login', ANONYMOUS_LOGIN_MESSAGE)
 
     is_superuser = request.user.is_superuser
     is_editor = is_superuser_or_editor(request.user)
@@ -55,14 +29,7 @@ def show_main(request):
     can_star = request.user.is_authenticated
 
     context = {
-        "name": "Syabil Wafi",
-        "npm": "2506657371",
-        "class": "PBP-B",
-        "bio": (
-            "Computer Science undergraduate at the University of Indonesia with experience in data science, operations, and leadership. I've worked on web-based projects, "
-            "focusing on front-end development and UI/UX, while also contributing to startup operations and actively participating in organizations. I'm continuously "
-            "developing my skills in programming and problem-solving, and I'm eager to contribute to impactful projects, grow as a technologist, and collaborate with others to create meaningful solutions."
-        ),
+        **PROFILE,
         "last_login": last_login,
         "is_superuser": is_superuser,
         "is_editor": is_editor,
