@@ -5,13 +5,10 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, JsonResponse
 from django.contrib import messages
 from django.utils.timesince import timesince
-from .models import Post, Comment
-from .forms import PostForm, CommentForm
-
-
-def is_superuser_or_editor(user):
-    """Check if user is superuser or in Editor group"""
-    return user.is_superuser or user.groups.filter(name='Editor').exists()
+from .forms import CommentForm, PostForm
+from .models import Comment, Post
+from main.constants import PROFILE
+from main.permissions import is_superuser_or_editor
 
 
 def show_blog(request):
@@ -23,7 +20,7 @@ def show_blog(request):
 
     context = {
         'comment_form': CommentForm(),
-        'name': 'Syabil Wafi',
+        'name': PROFILE['name'],
         'can_create': can_create,
         'can_edit': can_edit,
         'can_delete': can_delete,
