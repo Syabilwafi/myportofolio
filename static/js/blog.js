@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('create-post-modal');
     const openBtn = document.getElementById('open-modal-btn');
     const closeBtn = document.getElementById('close-modal-btn');
+    const windowCloseBtn = document.getElementById('blog-window-close');
     const createForm = document.getElementById('create-post-form');
     let controller;
     let requestVersion = 0;
@@ -184,6 +185,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     sidebarToggleBtn?.addEventListener('click', () => blogSidebar?.classList.toggle('show'));
+    windowCloseBtn?.addEventListener('click', () =>
+        window.location.assign(windowCloseBtn.dataset.homeUrl));
     openBtn?.addEventListener('click', () => {
         modal.classList.remove('hidden');
         modal.setAttribute('aria-hidden', 'false');
