@@ -8,23 +8,18 @@ from django.utils.timesince import timesince
 from .forms import CommentForm, PostForm
 from .models import Comment, Post
 from main.constants import PROFILE
-from main.permissions import is_superuser_or_editor
 
 
 def show_blog(request):
     # Determine user permissions
     can_create = request.user.is_superuser
-    can_edit = is_superuser_or_editor(request.user)
     can_delete = request.user.is_superuser
-    can_comment = True  # Anyone can comment
 
     context = {
         'comment_form': CommentForm(),
         'name': PROFILE['name'],
         'can_create': can_create,
-        'can_edit': can_edit,
         'can_delete': can_delete,
-        'can_comment': can_comment,
     }
     return render(request, 'blog.html', context)
 
@@ -88,16 +83,21 @@ def delete_post(request):
 @require_POST
 def create_comment(request):
     post_id = request.POST.get('post_id')
-    if post_id:
-        post = get_object_or_404(Post, pk=post_id)
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.post = post
-            if not comment.username or not comment.username.strip():
-                comment.username = Comment.get_anonymous_username()
-            comment.save()
-            messages.success(request, 'Comment posted successfully!')
+    if not post_id:
+        messages.error(request, 'Choose a post before submitting a comment.')
+        return redirect('blog:show_blog')
+
+    post = get_object_or_404(Post, pk=post_id)
+    form = CommentForm(request.POST)
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.post = post
+        if not comment.username or not comment.username.strip():
+            comment.username = Comment.get_anonymous_username()
+        comment.save()
+        messages.success(request, 'Comment posted successfully!')
+    else:
+        messages.error(request, 'Comment could not be posted. Check the name and comment text.')
     return redirect('blog:show_blog')
 
 

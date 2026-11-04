@@ -17,28 +17,37 @@ const initializeProjects = () => {
         } catch { return null; }
     };
 
+    const urlForProject = (pattern, id) =>
+        pattern.replace('00000000-0000-0000-0000-000000000000', encodeURIComponent(id));
+
+    const getCookie = name => {
+        const prefix = `${name}=`;
+        const cookie = document.cookie.split(';').map(value => value.trim())
+            .find(value => value.startsWith(prefix));
+        return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : null;
+    };
+
     const updateDisplay = item => {
         current = item;
-        const fields = item.fields;
-        document.getElementById('active-project-title').textContent = fields.name;
-        document.getElementById('active-project-desc').textContent = fields.description;
+        document.getElementById('active-project-title').textContent = item.name;
+        document.getElementById('active-project-desc').textContent = item.description;
         const link = document.getElementById('active-project-link');
         const frame = document.getElementById('active-project-frame');
-        const url = safeUrl(fields.url);
+        const url = safeUrl(item.url);
         if (url) link.href = url;
         else link.removeAttribute('href');
         frame.src = url || 'about:blank';
-        frame.title = fields.name;
-        document.getElementById('star-count').textContent = fields.star_count ?? fields.stars_count;
-        star.classList.toggle('is-starred', fields.is_starred);
-        star.setAttribute('aria-pressed', String(fields.is_starred));
+        frame.title = item.name;
+        document.getElementById('star-count').textContent = item.star_count;
+        star.classList.toggle('is-starred', item.is_starred);
+        star.setAttribute('aria-pressed', String(item.is_starred));
         ['edit-btn', 'delete-btn'].forEach(id => {
             const button = document.getElementById(id);
             if (button) button.style.display = 'flex';
         });
     };
 
-    const loadProjects = async (preferredId = current?.pk) => {
+    const loadProjects = async (preferredId = current?.id) => {
         controller?.abort();
         controller = new AbortController();
         const version = ++requestVersion;
@@ -67,14 +76,20 @@ const initializeProjects = () => {
                 sidebar.append(empty);
                 return true;
             }
-            const selected = projects.find(item => item.pk === preferredId) || projects[0];
+            const projectArea = document.querySelector('.projects-content');
+            projects.forEach(item => {
+                item.update_url = urlForProject(projectArea.dataset.projectUpdateUrl, item.id);
+                item.delete_url = urlForProject(projectArea.dataset.projectDeleteUrl, item.id);
+                item.star_url = urlForProject(projectArea.dataset.projectStarUrl, item.id);
+            });
+            const selected = projects.find(item => item.id === preferredId) || projects[0];
             projects.forEach(item => {
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'project-tab-btn';
 
-                button.textContent = `> ${item.fields.name}`;
-                button.classList.toggle('active', item.pk === selected.pk);
+                button.textContent = `> ${item.name}`;
+                button.classList.toggle('active', item.id === selected.id);
                 button.addEventListener('click', () => {
                     sidebar.querySelectorAll('button').forEach(tab => tab.classList.remove('active'));
                     button.classList.add('active');
@@ -116,11 +131,11 @@ const initializeProjects = () => {
             try {
                 const response = await fetch(item.star_url, {
                     method: 'POST', credentials: 'same-origin',
-                    headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value }
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') || '' }
                 });
                 if (!response.ok || response.redirected) throw new Error('Unable to star project. Check your login and try again.');
                 const data = await response.json();
-                Object.assign(item.fields, data);
+                Object.assign(item, data);
                 if (current === item) updateDisplay(item);
             } catch (error) { showToast(error.message, 'error'); }
             finally { star.disabled = false; }
@@ -147,15 +162,17 @@ const initializeProjects = () => {
             try {
                 const response = await fetch(form.action, {
                     method: 'POST', credentials: 'same-origin', body: new FormData(form),
-                    headers: { 'X-CSRFToken': form.elements.csrfmiddlewaretoken.value }
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') || form.elements.csrfmiddlewaretoken.value }
                 });
                 if (!response.headers.get('content-type')?.includes('application/json')) {
                     throw new Error('Request rejected. Reload the page to renew your session and try again.');
                 }
                 const data = await response.json();
                 if (!response.ok) {
-                    const validationErrors = Object.entries(data.errors || {}).flatMap(([field, items]) =>
-                        items.map(item => `${field}: ${item.message}`)).join('\n');
+                    const validationErrors = Object.entries(data.errors || data).flatMap(([field, items]) =>
+                        (Array.isArray(items) ? items : [items]).map(item =>
+                            `${field}: ${typeof item === 'string' ? item : item.message || 'Invalid value.'}`
+                        )).join('\n');
                     const message = response.status === 400
                         ? validationErrors || data.message || 'Please correct the form.'
                         : response.status === 403
@@ -171,7 +188,7 @@ const initializeProjects = () => {
                 modal.close();
                 clearTimeout(debounceTimer);
                 search.value = '';
-                showToast(data.message, 'success');
+                showToast(data.message || 'Project created successfully!', 'success');
                 await loadProjects(data.id);
             } catch (error) {
                 const message = 'Terjadi kesalahan pada sistem. Silakan coba lagi.';
