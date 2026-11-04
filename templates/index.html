@@ -74,7 +74,6 @@
                 <input id="search-input" type="text" class="retro-input" placeholder="Search by name or description" autocomplete="off">
                 <div class="projects-content"
                      data-projects-url="{% url 'api:project-list' %}"
-                     data-project-detail-url="{% url 'api:project-detail' '00000000-0000-0000-0000-000000000000' %}"
                      data-project-star-url="{% url 'api:project-star' '00000000-0000-0000-0000-000000000000' %}"
                      data-project-update-url="{% url 'main:update_project' '00000000-0000-0000-0000-000000000000' %}"
                      data-project-delete-url="{% url 'main:delete_project' '00000000-0000-0000-0000-000000000000' %}">

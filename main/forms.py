@@ -1,4 +1,4 @@
-from django.forms import ModelForm, TextInput, Textarea, URLInput, PasswordInput, CharField
+from django.forms import ModelForm, TextInput, Textarea, URLInput
 from django.contrib.auth.forms import UserCreationForm as BaseUserCreationForm, AuthenticationForm as BaseAuthenticationForm
 
 from main.models import Project

@@ -32,7 +32,7 @@ class MainTest(TestCase):
         self.assertEqual(response.context["npm"], "2506657371")
 
         self.assertContains(response, "Syabil")
-        self.assertContains(response, self.experience.title)
+        self.assertContains(response, 'data-experiences-url="/api/experiences/"')
 
     def test_nonexistent_page_returns_404(self):
         response = self.client.get("/non-existent-page/")
@@ -50,10 +50,10 @@ class MainTest(TestCase):
 
     def test_empty_experiences_state(self):
         Experience.objects.all().delete()
-        response = self.client.get(reverse("main:show_main"))
+        response = self.client.get(reverse("main:get_experiences_json"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "No experience found.")
+        self.assertEqual(response.json(), [])
 
     def test_completed_experience(self):
         self.experience.ended_at = date(2024, 6, 1)
@@ -61,9 +61,11 @@ class MainTest(TestCase):
 
         self.assertFalse(self.experience.is_ongoing)
 
-        response = self.client.get(reverse("main:show_main"))
-        self.assertContains(response, "Jun 2024")
-        self.assertNotContains(response, "Present")
+        response = self.client.get(reverse("main:get_experiences_json"))
+        self.assertEqual(response.status_code, 200)
+        experience_data = response.json()[0]
+        self.assertEqual(experience_data["title"], self.experience.title)
+        self.assertEqual(experience_data["ended_at"], "Jun 2024")
 
     def test_project_url_is_accessible_and_uses_correct_template(self):
         response = self.client.get(reverse("main:show_main"))
