@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
+from django.core.management.utils import get_random_secret_key
 # Load environment variables from .env file
 load_dotenv()
 
@@ -24,11 +26,16 @@ PRODUCTION = os.getenv('PRODUCTION', 'False').lower() == 'true'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6t6&&go9kdz8m0bf0_f84kx&h@+v7q3u-z*mt0-!((r1izggkx'
+# Set SECRET_KEY in the deployment environment. A temporary key is sufficient
+# for local development, but production must always use a stable secret.
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    if PRODUCTION:
+        raise ImproperlyConfigured('SECRET_KEY must be configured in production.')
+    SECRET_KEY = get_random_secret_key()
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Never enable Django's detailed debug pages in production.
+DEBUG = not PRODUCTION and os.getenv('DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -147,7 +154,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 WHITENOISE_USE_FINDERS = True
