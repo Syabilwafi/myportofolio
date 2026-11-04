@@ -21,18 +21,14 @@ from main.permissions import (
 def show_main(request):
     last_login = request.COOKIES.get('last_login', ANONYMOUS_LOGIN_MESSAGE)
 
-    is_superuser = request.user.is_superuser
-    is_editor = is_superuser_or_editor(request.user)
-    can_edit = is_editor
-    can_delete = is_superuser
-    can_create = is_superuser
+    can_edit = is_superuser_or_editor(request.user)
+    can_delete = request.user.is_superuser
+    can_create = request.user.is_superuser
     can_star = request.user.is_authenticated
 
     context = {
         **PROFILE,
         "last_login": last_login,
-        "is_superuser": is_superuser,
-        "is_editor": is_editor,
         "can_edit": can_edit,
         "can_delete": can_delete,
         "can_create": can_create,
@@ -194,6 +190,7 @@ def login_view(request):
     }
     return render(request, "login.html", context)
 
+@require_http_methods(["POST"])
 def logout_view(request):
     logout(request)
     messages.success(request, "Anda berhasil logout.")

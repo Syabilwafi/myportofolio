@@ -13,7 +13,6 @@
         {% block meta %}{% endblock meta %}
     </head>
     <body>
-        {% csrf_token %}
         <nav class="navbar">
             <span class="nav-logo">SYBLWF</span>
             <button class="menu-toggle" id="menu-toggle">
@@ -22,13 +21,16 @@
                 </svg>
             </button>
             <ul class="nav-links" id="nav-links">
-                <li><a href="/#about">About</a></li>
-                <li><a href="/blog">Blog</a></li>
-                <li><a href="/#contact">Contact</a></li>
+                <li><a href="{% url 'main:show_main' %}#about">About</a></li>
+                <li><a href="{% url 'blog:show_blog' %}">Blog</a></li>
+                <li><a href="{% url 'main:show_main' %}#contact">Contact</a></li>
                 {% if user.is_authenticated %}
                     <li class="nav-user">
                         <span class="nav-username">{{ user.username }}</span>
-                        <a href="{% url 'main:logout' %}" class="nav-logout">Logout</a>
+                        <form method="post" action="{% url 'main:logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="nav-logout">Logout</button>
+                        </form>
                     </li>
                 {% else %}
                     <li><a href="{% url 'main:login' %}">Login</a></li>
@@ -41,6 +43,13 @@
         <div class="crt-vignette"></div>
         <div class="crt-flicker"></div>
 
+        {% if messages %}
+            <div class="site-messages" role="status" aria-live="polite">
+                {% for message in messages %}
+                    <p class="site-message {{ message.tags }}">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
         {% block content %}{% endblock content %}
         <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
 
