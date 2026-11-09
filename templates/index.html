@@ -31,8 +31,11 @@
                     </div>
                 </div>
 
-                <section id="experiences" class="experiences" data-experiences-url="{% url 'main:get_experiences_json' %}" aria-label="Experience history">
+                <section id="experiences" class="experiences" data-experiences-url="{% url 'api:experience-list' %}" data-experience-detail-url="{% url 'api:experience-detail' '00000000-0000-0000-0000-000000000000' %}" data-can-edit="{{ can_edit|yesno:'true,false' }}" data-can-delete="{{ can_delete|yesno:'true,false' }}" aria-label="Experience history">
                     <div class="section-container">
+                        <label for="experience-search">Search experiences</label>
+                        <input id="experience-search" type="search" class="retro-input" placeholder="Search experiences" autocomplete="off">
+                        {% if can_create %}<button id="add-experience" type="button" class="btn btn-filled btn-sm">+ Add Experience</button>{% endif %}
                         <div class="main-display-area">
                             <div class="experience terminal-window">
                                 <div class="window-header">
@@ -75,8 +78,7 @@
                 <div class="projects-content"
                      data-projects-url="{% url 'api:project-list' %}"
                      data-project-star-url="{% url 'api:project-star' '00000000-0000-0000-0000-000000000000' %}"
-                     data-project-update-url="{% url 'main:update_project' '00000000-0000-0000-0000-000000000000' %}"
-                     data-project-delete-url="{% url 'main:delete_project' '00000000-0000-0000-0000-000000000000' %}">
+                     data-project-detail-url="{% url 'api:project-detail' '00000000-0000-0000-0000-000000000000' %}">
                     {% csrf_token %}
                     <div class="project-sidebar" id="project-sidebar" aria-live="polite" aria-busy="true">
                         <p class="no-projects">Loading projects...</p>
@@ -111,14 +113,14 @@
                                 {% endif %}
 
                                 {% if can_edit %}
-                                    <button id="edit-btn" class="edit-btn" type="button" aria-label="Edit this project" onclick="editProject()" style="display:none;">
+                                    <button id="edit-btn" class="edit-btn" type="button" aria-label="Edit this project" style="display:none;">
                                         <span class="btn-icon">✎</span>
                                         <span>Edit</span>
                                     </button>
                                 {% endif %}
 
                                 {% if can_delete %}
-                                    <button id="delete-btn" class="delete-btn" type="button" aria-label="Delete this project" onclick="deleteProject()" style="display:none;">
+                                    <button id="delete-btn" class="delete-btn" type="button" aria-label="Delete this project" style="display:none;">
                                         <span class="btn-icon">✕</span>
                                         <span>Delete</span>
                                     </button>
@@ -183,6 +185,37 @@
                 {{ project_form.as_p }}
                 <div id="project-form-errors" role="alert" tabindex="-1"></div>
                 <button type="submit" class="btn btn-filled">Create project</button>
+            </form>
+        </dialog>
+        {% endif %}
+        {% if can_edit %}
+        <dialog id="project-edit-modal" aria-labelledby="project-edit-modal-title">
+            <div class="modal-heading">
+                <h2 id="project-edit-modal-title">Edit project</h2>
+                <button id="close-project-edit-modal" type="button" class="btn" aria-label="Close dialog">&times;</button>
+            </div>
+            <form id="project-edit-form" method="post">
+                {% csrf_token %}
+                <p><label for="edit-project-name">Name</label><input id="edit-project-name" name="name" class="retro-input" required maxlength="255"></p>
+                <p><label for="edit-project-url">URL</label><input id="edit-project-url" name="url" type="url" class="retro-input"></p>
+                <p><label for="edit-project-description">Description</label><textarea id="edit-project-description" name="description" class="retro-input"></textarea></p>
+                <button type="submit" class="btn btn-filled">Save changes</button>
+            </form>
+        </dialog>
+        {% endif %}
+        {% if can_create %}
+        <dialog id="experience-modal" aria-labelledby="experience-modal-title">
+            <div class="modal-heading"><h2 id="experience-modal-title">Add experience</h2><button id="close-experience-modal" type="button" class="btn" aria-label="Close dialog">&times;</button></div>
+            <form id="experience-form" method="post">
+                {% csrf_token %}
+                <label>Title<input name="title" class="retro-input" required maxlength="255"></label>
+                <label>Organization<input name="organization" class="retro-input" maxlength="255"></label>
+                <label>Description<textarea name="description" class="retro-input"></textarea></label>
+                <label>Category<select name="category" class="retro-input"><option value="internship">Internship</option><option value="research">Research</option><option value="volunteer">Volunteer</option><option value="part-time">Part-Time</option><option value="full-time">Full-Time</option><option value="freelance">Freelance</option></select></label>
+                <label>Thumbnail URL<input name="thumbnail" type="url" class="retro-input"></label>
+                <label>Started at<input name="started_at" type="date" class="retro-input" required></label>
+                <label>Ended at<input name="ended_at" type="date" class="retro-input"></label>
+                <button type="submit" class="btn btn-filled">Save experience</button>
             </form>
         </dialog>
         {% endif %}
