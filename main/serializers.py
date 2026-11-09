@@ -1,7 +1,7 @@
 from django.utils.html import strip_tags
 from rest_framework import serializers
 
-from main.models import Project
+from main.models import Project, Experience
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -36,9 +36,46 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     def get_is_starred(self, obj):
         request = self.context.get("request")
-        if request is None or not request.user.is_authenticated:
+        if not request or not request.user.is_authenticated:
             return False
-        return request.user in obj.starred_by.all()
+
+        return obj.starred_by.filter(id=request.user.id).exists()
 
     def get_starred_by_names(self, obj):
-        return ", ".join(user.username for user in obj.starred_by.all())
+        return ", ".join(obj.starred_by.values_list("username", flat=True))
+
+
+class ExperienceSerializer(serializers.ModelSerializer):
+    is_ongoing = serializers.BooleanField(read_only=True)
+
+    category_display = serializers.CharField(
+        source='get_category_display',
+        read_only=True
+    )
+
+    class Meta:
+        model = Experience
+        fields = [
+            'id',
+            'title',
+            'organization',
+            'description',
+            'category',
+            'category_display',
+            'thumbnail',
+            'started_at',
+            'ended_at',
+            'is_ongoing',
+        ]
+        read_only_fields = ['id']
+
+    def validate(self, attrs):
+        started_at = attrs.get('started_at', getattr(self.instance, 'started_at', None))
+        ended_at = attrs.get('ended_at', getattr(self.instance, 'ended_at', None))
+
+        if started_at and ended_at and ended_at < started_at:
+            raise serializers.ValidationError({
+                'ended_at': 'The end date cannot be earlier than the start date.'
+            })
+
+        return attrs
