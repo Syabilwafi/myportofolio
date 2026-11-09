@@ -5,6 +5,8 @@ const initializeProjects = () => {
     const star = document.getElementById('star-btn');
     const modal = document.getElementById('project-modal');
     const form = document.getElementById('project-create-form');
+    const editModal = document.getElementById('project-edit-modal');
+    const editForm = document.getElementById('project-edit-form');
     let current = null;
     let controller;
     let requestVersion = 0;
@@ -19,6 +21,18 @@ const initializeProjects = () => {
 
     const urlForProject = (pattern, id) =>
         pattern.replace('00000000-0000-0000-0000-000000000000', encodeURIComponent(id));
+    const apiError = async (response, fallback) => {
+        let data = {};
+        try { data = await response.json(); } catch { return fallback; }
+        if (response.status === 400) {
+            return Object.entries(data).flatMap(([field, errors]) =>
+                (Array.isArray(errors) ? errors : [errors]).map(error =>
+                    `${field}: ${typeof error === 'string' ? error : error.message || 'Invalid value.'}`
+                )).join('\n') || fallback;
+        }
+        if (response.status === 403) return data.detail || 'You do not have permission to perform this action.';
+        return data.detail || fallback;
+    };
 
     const getCookie = name => {
         const prefix = `${name}=`;
@@ -78,8 +92,7 @@ const initializeProjects = () => {
             }
             const projectArea = document.querySelector('.projects-content');
             projects.forEach(item => {
-                item.update_url = urlForProject(projectArea.dataset.projectUpdateUrl, item.id);
-                item.delete_url = urlForProject(projectArea.dataset.projectDeleteUrl, item.id);
+                item.detail_url = urlForProject(projectArea.dataset.projectDetailUrl, item.id);
                 item.star_url = urlForProject(projectArea.dataset.projectStarUrl, item.id);
             });
             const selected = projects.find(item => item.id === preferredId) || projects[0];
@@ -120,8 +133,48 @@ const initializeProjects = () => {
         ++requestVersion;
         debounceTimer = setTimeout(() => loadProjects(), 400);
     });
-    window.editProject = () => { if (current) location.assign(current.update_url); };
-    window.deleteProject = () => { if (current) location.assign(current.delete_url); };
+    const editButton = document.getElementById('edit-btn');
+    if (editButton && editModal && editForm) {
+        editButton.addEventListener('click', () => {
+            if (!current) return;
+            editForm.elements.name.value = current.name;
+            editForm.elements.url.value = current.url || '';
+            editForm.elements.description.value = current.description;
+            editForm.dataset.detailUrl = current.detail_url;
+            editModal.showModal();
+        });
+        document.getElementById('close-project-edit-modal').addEventListener('click', () => editModal.close());
+        editForm.addEventListener('submit', async event => {
+            event.preventDefault();
+            const submit = editForm.querySelector('[type=submit]');
+            submit.disabled = true;
+            try {
+                const response = await fetch(editForm.dataset.detailUrl, {
+                    method: 'PATCH', credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') || editForm.elements.csrfmiddlewaretoken.value },
+                    body: JSON.stringify({ name: editForm.elements.name.value, url: editForm.elements.url.value || null, description: editForm.elements.description.value })
+                });
+                if (!response.ok) throw new Error(await apiError(response, 'Unable to update project.'));
+                const updated = await response.json();
+                await loadProjects(updated.id);
+                editModal.close();
+                showToast('Project updated successfully!', 'success');
+            } catch (error) { showToast(error.message, 'error'); }
+            finally { submit.disabled = false; }
+        });
+    }
+    const deleteButton = document.getElementById('delete-btn');
+    if (deleteButton) deleteButton.addEventListener('click', async () => {
+        if (!current || !window.confirm(`Delete “${current.name}”?`)) return;
+        deleteButton.disabled = true;
+        try {
+            const response = await fetch(current.detail_url, { method: 'DELETE', credentials: 'same-origin', headers: { 'X-CSRFToken': getCookie('csrftoken') || document.querySelector('.projects-content [name=csrfmiddlewaretoken]').value } });
+            if (!response.ok) throw new Error(await apiError(response, 'Unable to delete project.'));
+            showToast('Project deleted successfully!', 'success');
+            await loadProjects();
+        } catch (error) { showToast(error.message, 'error'); }
+        finally { deleteButton.disabled = false; }
+    });
 
     if (!star.classList.contains('login-required')) {
         star.addEventListener('click', async () => {
@@ -133,7 +186,7 @@ const initializeProjects = () => {
                     method: 'POST', credentials: 'same-origin',
                     headers: { 'X-CSRFToken': getCookie('csrftoken') || '' }
                 });
-                if (!response.ok || response.redirected) throw new Error('Unable to star project. Check your login and try again.');
+                if (!response.ok || response.redirected) throw new Error(await apiError(response, 'Unable to star project. Check your login and try again.'));
                 const data = await response.json();
                 Object.assign(item, data);
                 if (current === item) updateDisplay(item);

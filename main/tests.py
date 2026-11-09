@@ -1,6 +1,8 @@
 from datetime import date
+from django.contrib.auth.models import Group, User
 from django.test import TestCase
 from django.urls import reverse
+from rest_framework.test import APIClient, APITestCase
 
 from main.models import Experience, Project
 
@@ -32,7 +34,7 @@ class MainTest(TestCase):
         self.assertEqual(response.context["npm"], "2506657371")
 
         self.assertContains(response, "Syabil")
-        self.assertContains(response, 'data-experiences-url="/api/experiences/"')
+        self.assertContains(response, 'data-experiences-url="/api/v1/experiences/"')
 
     def test_nonexistent_page_returns_404(self):
         response = self.client.get("/non-existent-page/")
@@ -50,7 +52,7 @@ class MainTest(TestCase):
 
     def test_empty_experiences_state(self):
         Experience.objects.all().delete()
-        response = self.client.get(reverse("main:get_experiences_json"))
+        response = self.client.get(reverse("api:experience-list"))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), [])
@@ -61,11 +63,11 @@ class MainTest(TestCase):
 
         self.assertFalse(self.experience.is_ongoing)
 
-        response = self.client.get(reverse("main:get_experiences_json"))
+        response = self.client.get(reverse("api:experience-list"))
         self.assertEqual(response.status_code, 200)
         experience_data = response.json()[0]
         self.assertEqual(experience_data["title"], self.experience.title)
-        self.assertEqual(experience_data["ended_at"], "Jun 2024")
+        self.assertEqual(experience_data["ended_at"], "2024-06-01")
 
     def test_project_url_is_accessible_and_uses_correct_template(self):
         response = self.client.get(reverse("main:show_main"))
@@ -143,3 +145,107 @@ class ProjectAjaxTests(TestCase):
         self.assertTrue(fields['is_starred'])
         self.client.logout()
         self.assertFalse(self.client.get(url, {'name': 'port'}).json()[0]['fields']['is_starred'])
+
+
+class PortfolioAPITests(APITestCase):
+    def setUp(self):
+        self.list_url = reverse('api:experience-list')
+        self.project_url = reverse('api:project-list')
+        self.owner = User.objects.create_superuser('owner', 'owner@example.com', 'pass')
+        self.editor = User.objects.create_user('editor', password='pass')
+        self.editor.groups.add(Group.objects.create(name='Editor'))
+        self.reader = User.objects.create_user('reader', password='pass')
+        self.experience = Experience.objects.create(
+            title='Existing role', organization='Lab', category='research',
+            started_at=date(2024, 1, 1),
+        )
+        self.project = Project.objects.create(name='Existing project')
+        self.experience_payload = {
+            'title': 'New role', 'organization': 'Institute', 'description': 'Research',
+            'category': 'research', 'started_at': '2025-01-01', 'ended_at': None,
+        }
+
+    def test_guest_and_regular_user_cannot_write_experiences(self):
+        before = Experience.objects.count()
+        self.assertEqual(self.client.post(self.list_url, self.experience_payload, format='json').status_code, 403)
+        self.assertEqual(Experience.objects.count(), before)
+        self.client.force_authenticate(self.reader)
+        self.assertEqual(self.client.post(self.list_url, self.experience_payload, format='json').status_code, 403)
+        self.assertEqual(Experience.objects.count(), before)
+        self.assertEqual(self.client.patch(reverse('api:experience-detail', args=[self.experience.pk]), {'title': 'Hacked'}).status_code, 403)
+        self.experience.refresh_from_db()
+        self.assertEqual(self.experience.title, 'Existing role')
+
+    def test_editor_can_patch_but_cannot_create_or_delete(self):
+        self.client.force_authenticate(self.editor)
+        detail = reverse('api:experience-detail', args=[self.experience.pk])
+        before = Experience.objects.count()
+        self.assertEqual(self.client.post(self.list_url, self.experience_payload, format='json').status_code, 403)
+        self.assertEqual(Experience.objects.count(), before)
+        self.assertEqual(self.client.patch(detail, {'title': 'Edited by editor'}).status_code, 200)
+        self.experience.refresh_from_db()
+        self.assertEqual(self.experience.title, 'Edited by editor')
+        self.assertEqual(self.client.delete(detail).status_code, 403)
+        self.assertTrue(Experience.objects.filter(pk=self.experience.pk).exists())
+
+    def test_owner_can_create_and_delete_experiences(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.post(self.list_url, self.experience_payload, format='json')
+        self.assertEqual(response.status_code, 201)
+        created_id = response.data['id']
+        self.assertTrue(Experience.objects.filter(pk=created_id, title='New role').exists())
+        self.assertEqual(self.client.delete(reverse('api:experience-detail', args=[created_id])).status_code, 204)
+        self.assertFalse(Experience.objects.filter(pk=created_id).exists())
+
+    def test_invalid_experience_input_returns_400_without_saving(self):
+        self.client.force_authenticate(self.owner)
+        before = Experience.objects.count()
+        invalid = {**self.experience_payload, 'ended_at': '2024-01-01'}
+        response = self.client.post(self.list_url, invalid, format='json')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('ended_at', response.data)
+        self.assertEqual(Experience.objects.count(), before)
+
+    def test_experience_list_search_get_put_and_missing_detail(self):
+        Experience.objects.create(
+            title='Data Analyst', organization='Different Org', category='full-time',
+            started_at=date(2023, 1, 1),
+        )
+        response = self.client.get(self.list_url, {'q': 'lab'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([item['title'] for item in response.data], ['Existing role'])
+        self.client.force_authenticate(self.editor)
+        detail = reverse('api:experience-detail', args=[self.experience.pk])
+        self.assertEqual(self.client.get(detail).status_code, 200)
+        updated = self.client.put(detail, {
+            **self.experience_payload, 'title': 'PUT update',
+        }, format='json')
+        self.assertEqual(updated.status_code, 200)
+        self.experience.refresh_from_db()
+        self.assertEqual(self.experience.title, 'PUT update')
+        missing = reverse('api:experience-detail', args=['00000000-0000-0000-0000-000000000001'])
+        self.assertEqual(self.client.get(missing).status_code, 404)
+
+    def test_editor_template_contains_edit_modal(self):
+        from django.test import Client
+        client = Client()
+        client.force_login(self.editor)
+        response = client.get(reverse('main:show_main'))
+        self.assertContains(response, 'id="project-edit-modal"')
+        self.assertContains(response, 'id="experience-modal"')
+        self.assertNotContains(response, 'id="add-experience"')
+
+    def test_star_requires_login_and_uses_authenticated_user(self):
+        star_url = reverse('api:project-star', args=[self.project.pk])
+        self.assertEqual(self.client.post(star_url).status_code, 403)
+        self.assertFalse(self.project.starred_by.exists())
+        self.client.force_authenticate(self.reader)
+        self.assertEqual(self.client.post(star_url).status_code, 200)
+        self.assertQuerySetEqual(self.project.starred_by.all(), [self.reader], transform=lambda user: user)
+
+    def test_session_write_without_csrf_token_is_rejected(self):
+        client = APIClient(enforce_csrf_checks=True)
+        client.login(username='owner', password='pass')
+        response = client.post(self.list_url, self.experience_payload, format='json')
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Experience.objects.count(), 1)
