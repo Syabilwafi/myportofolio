@@ -132,7 +132,7 @@ def get_projects_json(request):
             },
             'update_url': reverse('main:update_project', args=[project.pk]),
             'delete_url': reverse('main:delete_project', args=[project.pk]),
-            'star_url': reverse('main:toggle_star', args=[project.pk]),
+            'star_url': reverse('api:project-star', args=[project.pk]),
         })
 
     response = JsonResponse(projects_list, safe=False)
@@ -199,22 +199,3 @@ def logout_view(request):
     response.delete_cookie('last_login')
     return response
 
-@login_required(login_url="/login/")
-@require_http_methods(["POST"])
-def toggle_star(request, project_id):
-    project = get_object_or_404(Project, id=project_id)
-
-    if project.starred_by.filter(id=request.user.id).exists():
-        project.starred_by.remove(request.user)
-        is_starred = False
-    else:
-        project.starred_by.add(request.user)
-        is_starred = True
-
-    star_count = project.starred_by.count()
-    return JsonResponse({
-        'success': True,
-        'is_starred': is_starred,
-        'star_count': star_count,
-        'stars_count': star_count,
-    })

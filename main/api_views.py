@@ -15,12 +15,20 @@ from main.permissions import IsPortfolioOwnerOrEditorOrReadOnly
 from main.serializers import ExperienceSerializer, ProjectSerializer
 
 
-@api_view(["GET", "HEAD", "POST"])
+@api_view(["GET", "POST"])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
 def experience_list(request):
-    if request.method in ("GET", "HEAD"):
+    if request.method == "GET":
         experiences = Experience.objects.all().order_by("-started_at")
+        query = request.query_params.get("q", "").strip()
+        if query:
+            experiences = experiences.filter(
+                Q(title__icontains=query)
+                | Q(organization__icontains=query)
+                | Q(description__icontains=query)
+                | Q(category__icontains=query)
+            )
         serializer = ExperienceSerializer(experiences, many=True, context={"request": request})
         return Response(serializer.data)
 
@@ -30,12 +38,12 @@ def experience_list(request):
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-@api_view(["GET", "HEAD", "PUT", "PATCH", "DELETE"])
+@api_view(["GET", "PUT", "PATCH", "DELETE"])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
 def experience_detail(request, experience_id):
     experience = get_object_or_404(Experience, pk=experience_id)
-    if request.method in ("GET", "HEAD"):
+    if request.method == "GET":
         return Response(ExperienceSerializer(experience, context={"request": request}).data)
     if request.method == "DELETE":
         experience.delete()
@@ -50,7 +58,7 @@ def experience_detail(request, experience_id):
     return Response(serializer.data)
 
 
-@api_view(["GET", "HEAD", "POST"])
+@api_view(["GET", "POST"])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
 def project_list(request):
@@ -72,14 +80,14 @@ def project_list(request):
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-@api_view(["GET", "HEAD", "PUT", "PATCH", "DELETE"])
+@api_view(["GET", "PUT", "PATCH", "DELETE"])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
 def project_detail(request, project_id):
     project = get_object_or_404(
         Project.objects.prefetch_related("starred_by"), pk=project_id,
     )
-    if request.method in ("GET", "HEAD"):
+    if request.method == "GET":
         serializer = ProjectSerializer(project, context={"request": request})
         return Response(serializer.data)
 
