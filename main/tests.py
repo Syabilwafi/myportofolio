@@ -50,7 +50,7 @@ class MainTest(TestCase):
 
     def test_empty_experiences_state(self):
         Experience.objects.all().delete()
-        response = self.client.get(reverse("main:get_experiences_json"))
+        response = self.client.get(reverse("api:experience-list"))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), [])
@@ -61,11 +61,11 @@ class MainTest(TestCase):
 
         self.assertFalse(self.experience.is_ongoing)
 
-        response = self.client.get(reverse("main:get_experiences_json"))
+        response = self.client.get(reverse("api:experience-list"))
         self.assertEqual(response.status_code, 200)
         experience_data = response.json()[0]
         self.assertEqual(experience_data["title"], self.experience.title)
-        self.assertEqual(experience_data["ended_at"], "Jun 2024")
+        self.assertEqual(experience_data["ended_at"], "2024-06-01")
 
     def test_project_url_is_accessible_and_uses_correct_template(self):
         response = self.client.get(reverse("main:show_main"))
