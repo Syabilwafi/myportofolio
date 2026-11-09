@@ -33,9 +33,13 @@
 
                 <section id="experiences" class="experiences" data-experiences-url="{% url 'api:experience-list' %}" data-experience-detail-url="{% url 'api:experience-detail' '00000000-0000-0000-0000-000000000000' %}" data-can-edit="{{ can_edit|yesno:'true,false' }}" data-can-delete="{{ can_delete|yesno:'true,false' }}" aria-label="Experience history">
                     <div class="section-container">
-                        <label for="experience-search">Search experiences</label>
-                        <input id="experience-search" type="search" class="retro-input" placeholder="Search experiences" autocomplete="off">
-                        {% if can_create %}<button id="add-experience" type="button" class="btn btn-filled btn-sm">+ Add Experience</button>{% endif %}
+                        <div class="experience-toolbar">
+                            <div class="search-control">
+                                <label for="experience-search">Search experiences</label>
+                                <input id="experience-search" type="search" class="retro-input" placeholder="Search by title, organization, or description" autocomplete="off">
+                            </div>
+                            {% if can_create %}<button id="add-experience" type="button" class="btn btn-filled btn-sm">+ Add Experience</button>{% endif %}
+                        </div>
                         <div class="main-display-area">
                             <div class="experience terminal-window">
                                 <div class="window-header">
@@ -73,8 +77,10 @@
                         <button id="open-project-modal" type="button" class="btn btn-filled btn-sm">+ Add Project</button>
                     {% endif %}
                 </div>
-                <label for="search-input">Search projects</label>
-                <input id="search-input" type="text" class="retro-input" placeholder="Search by name or description" autocomplete="off">
+                <div class="search-control project-search-control">
+                    <label for="search-input">Search projects</label>
+                    <input id="search-input" type="search" class="retro-input" placeholder="Search by name or description" autocomplete="off">
+                </div>
                 <div class="projects-content"
                      data-projects-url="{% url 'api:project-list' %}"
                      data-project-star-url="{% url 'api:project-star' '00000000-0000-0000-0000-000000000000' %}"
