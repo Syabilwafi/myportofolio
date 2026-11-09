@@ -1,6 +1,8 @@
 from datetime import date
+from django.contrib.auth.models import Group, User
 from django.test import TestCase
 from django.urls import reverse
+from rest_framework.test import APIClient, APITestCase
 
 from main.models import Experience, Project
 
@@ -145,11 +147,6 @@ class ProjectAjaxTests(TestCase):
         self.assertFalse(self.client.get(url, {'name': 'port'}).json()[0]['fields']['is_starred'])
 
 
-from datetime import date
-from django.contrib.auth.models import Group, User
-from rest_framework.test import APIClient, APITestCase
-
-
 class PortfolioAPITests(APITestCase):
     def setUp(self):
         self.list_url = reverse('api:experience-list')
@@ -208,6 +205,35 @@ class PortfolioAPITests(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('ended_at', response.data)
         self.assertEqual(Experience.objects.count(), before)
+
+    def test_experience_list_search_get_put_and_missing_detail(self):
+        Experience.objects.create(
+            title='Data Analyst', organization='Different Org', category='full-time',
+            started_at=date(2023, 1, 1),
+        )
+        response = self.client.get(self.list_url, {'q': 'lab'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([item['title'] for item in response.data], ['Existing role'])
+        self.client.force_authenticate(self.editor)
+        detail = reverse('api:experience-detail', args=[self.experience.pk])
+        self.assertEqual(self.client.get(detail).status_code, 200)
+        updated = self.client.put(detail, {
+            **self.experience_payload, 'title': 'PUT update',
+        }, format='json')
+        self.assertEqual(updated.status_code, 200)
+        self.experience.refresh_from_db()
+        self.assertEqual(self.experience.title, 'PUT update')
+        missing = reverse('api:experience-detail', args=['00000000-0000-0000-0000-000000000001'])
+        self.assertEqual(self.client.get(missing).status_code, 404)
+
+    def test_editor_template_contains_edit_modal(self):
+        from django.test import Client
+        client = Client()
+        client.force_login(self.editor)
+        response = client.get(reverse('main:show_main'))
+        self.assertContains(response, 'id="project-edit-modal"')
+        self.assertContains(response, 'id="experience-modal"')
+        self.assertNotContains(response, 'id="add-experience"')
 
     def test_star_requires_login_and_uses_authenticated_user(self):
         star_url = reverse('api:project-star', args=[self.project.pk])

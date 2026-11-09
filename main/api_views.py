@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.db.models.query import prefetch_related_objects
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication
@@ -115,5 +116,6 @@ def project_star(request, project_id):
         project.starred_by.remove(request.user)
     else:
         project.starred_by.add(request.user)
+    prefetch_related_objects([project], "starred_by")
     serializer = ProjectSerializer(project, context={"request": request})
     return Response(serializer.data)

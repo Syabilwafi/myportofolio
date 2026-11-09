@@ -7,7 +7,7 @@ from django.shortcuts import redirect
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 class IsPortfolioOwnerOrEditorOrReadOnly(BasePermission):
-    message = "Only the portfolio owner or an Editor can update projects."
+    message = "Only the portfolio owner or an Editor can make this change."
 
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:

@@ -32,17 +32,17 @@ class ProjectSerializer(serializers.ModelSerializer):
         return value
 
     def get_star_count(self, obj):
-        return obj.starred_by.count()
+        return len(obj.starred_by.all())
 
     def get_is_starred(self, obj):
         request = self.context.get("request")
         if not request or not request.user.is_authenticated:
             return False
 
-        return obj.starred_by.filter(id=request.user.id).exists()
+        return any(user.pk == request.user.pk for user in obj.starred_by.all())
 
     def get_starred_by_names(self, obj):
-        return ", ".join(obj.starred_by.values_list("username", flat=True))
+        return ", ".join(user.username for user in obj.starred_by.all())
 
 
 class ExperienceSerializer(serializers.ModelSerializer):

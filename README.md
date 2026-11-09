@@ -1,5 +1,7 @@
 # Portofolio Pribadi - Tugas Individu PBP
 
+Website portofolio pribadi berbasis Django yang menampilkan profil, pengalaman, proyek, dan blog. Data proyek dan pengalaman dikelola melalui API Django REST Framework; frontend memakai `fetch()` untuk pencarian dan perubahan data tanpa reload.
+
 Nama : Syabil Wafi Ahdi
 
 NPM : 2506657371
@@ -11,9 +13,9 @@ Kelas : PBP B
 ---
 
 ### Prerequisites
-- Python 3.12+
+- Python 3.12 atau lebih baru
 - Git
-- Any IDE
+- IDE pilihan
 
 ### Installation
 - Clone repository ini pada terminal
@@ -26,9 +28,14 @@ git clone https://github.com/Syabilwafi/myportofolio.git
 python -m venv env
 ```
 
-- Aktifkan environment virtual
+- Aktifkan environment virtual (Linux/macOS)
 ```bash
-env/bin/activate 
+source env/bin/activate
+```
+
+- Aktifkan environment virtual (Windows PowerShell)
+```powershell
+env\Scripts\Activate.ps1
 ```
 
 - Install dependencies pada `requirements.txt` 
@@ -45,6 +52,27 @@ python manage.py migrate
 - Jalankan server development
 ```bash
 python manage.py runserver
+```
+
+### API
+
+Semua endpoint portofolio tersedia di bawah `/api/v1/` dan menggunakan session authentication.
+
+| Resource | Endpoint | Method |
+| --- | --- | --- |
+| Experiences | `/api/v1/experiences/` | `GET`, `POST` |
+| Experience detail | `/api/v1/experiences/<uuid>/` | `GET`, `PUT`, `PATCH`, `DELETE` |
+| Projects | `/api/v1/projects/` | `GET`, `POST` |
+| Project detail | `/api/v1/projects/<uuid>/` | `GET`, `PUT`, `PATCH`, `DELETE` |
+| Project star | `/api/v1/projects/<uuid>/star/` | `POST` (toggle) |
+
+List endpoint menerima parameter pencarian `?q=...`. Membuat data memerlukan pemilik portofolio; Editor dapat memperbarui data; pengunjung hanya dapat membaca. Star memerlukan pengguna yang sudah login. Request yang mengubah data melalui session perlu menyertakan token CSRF.
+
+Jalankan pemeriksaan dan test suite dengan:
+
+```bash
+python manage.py check
+python manage.py test
 ```
 ## Tugas 1
 
@@ -111,17 +139,28 @@ kode yang sudah ditulis sendiri.
 
 ---
 
-1. REST (Representational State Transfer) adalah arsitektur API berbasis sumber daya (*resource-based*) yang memanfaat standar protokol HTTP secara *stateless*. Mengembalikan data JSON saja belum cukup disebut RESTful karena RESTful API mensyaratkan penerapan penuh standar HTTP, seperti struktur URI yang jelas (`/api/projects/`), penggunaan metode HTTP (*HTTP Verbs* seperti `GET`, `POST`, `PUT`, `PATCH`, `DELETE`) secara tepat, serta pengelolaan status respons HTTP yang sesuai (`200 OK`, `400 Bad Request`, `404 Not Found`). Perbedaan utama PUT dan PATCH terletak pada cakupan pembaruannya: `PUT` digunakan untuk mengganti **seluruh** data sumber daya secara utuh (*full update*), misalnya memperbarui seluruh atribut detail proyek sekaligus. Sedangkan `PATCH` digunakan untuk memperbarui **sebagian** data saja (*partial update*), misalnya hanya mengubah status bintang (*star*) atau *like* pada suatu proyek tanpa mengirim ulang data lainnya.
+1. REST (Representational State Transfer) adalah gaya arsitektur API berbasis sumber daya yang menggunakan semantik HTTP secara konsisten. Mengembalikan JSON saja belum cukup untuk membuat API menjadi RESTful. API juga perlu menggunakan URI resource yang jelas, method HTTP sesuai operasi, dan status respons yang tepat. `PUT` mengirim representasi lengkap resource untuk diperbarui, sedangkan `PATCH` mengirim perubahan sebagian. Pada proyek ini aksi star memiliki endpoint `POST` tersendiri karena operasinya adalah toggle, bukan pembaruan field resource melalui `PATCH`.
 
 2. Serializer pada Django REST Framework (DRF) berperan sebagai penerjemah dua arah antara objek kompleks Django (seperti Model atau QuerySet) dengan format data terstruktur seperti JSON (*serialization*), serta memvalidasi masukan data JSON pengguna sebelum disimpan ke basis data (*deserialization*). Keuntungannya dibandingkan merakit dictionary secara manual menggunakan `JsonResponse` adalah tersedianya validasi data otomatis, penerapan prinsip *Don't Repeat Yourself* (DRY) yang membuat kode lebih ringkas, kemudahan integrasi skema tabel melalui `ModelSerializer`, serta penanganan otomatis untuk relasi data yang kompleks.
 
 3. Autentikasi (*authentication*) adalah proses verifikasi **identitas** pengguna (memastikan siapa pengguna tersebut, contohnya proses *login*), sedangkan otorisasi (*authorization*) adalah proses verifikasi **hak akses** pengguna (memastikan apa saja tindakan yang boleh dilakukan oleh pengguna tersebut). Hak akses wajib diperiksa menggunakan *permission class* di sisi server karena pengamanan di sisi frontend (seperti menyembunyikan tombol di template HTML) sangat mudah dimanipulasi oleh pengguna melalui *developer tools* atau pengiriman HTTP request langsung (seperti cURL atau Postman) ke endpoint API.
 
-4. Permintaan yang mengubah data tetap memerlukan token CSRF saat memakai `SessionAuthentication` karena metode ini mengandalkan cookie sesi (*sessionid*) yang secara otomatis disertukan oleh browser pada setiap permintaan HTTP ke domain target. Tanpa verifikasi token CSRF, situs pihak ketiga yang berbahaya dapat memanfaatkan cookie sesi aktif milik pengguna untuk mengeksekusi aksi ilegal tanpa sepengetahuan pengguna (*Cross-Site Request Forgery*). Pengujian menggunakan `force_authenticate` tidak cukup untuk membuktikan perlindungan CSRF berjalan karena method tersebut sengaja merancang pemintasan (*bypass*) terhadap middleware CSRF dan alur autentikasi standar agar pengembang dapat langsung menguji otorisasi serta logika bisnis endpoint.
+4. Permintaan yang mengubah data tetap memerlukan token CSRF saat memakai `SessionAuthentication` karena metode ini mengandalkan cookie sesi (`sessionid`) yang otomatis dikirim browser ke domain target. Tanpa pemeriksaan CSRF, situs pihak ketiga dapat mencoba memanfaatkan sesi pengguna untuk mengirim aksi tanpa persetujuannya. Pengujian `force_authenticate` tidak membuktikan perlindungan CSRF karena metode itu melewati pemeriksaan session dan CSRF. Karena itu, proyek juga menguji request session menggunakan `APIClient(enforce_csrf_checks=True)` dan `.login()`.
 
 ### Penggunaan AI
 
 AI digunakan sebagai alat bantu untuk mengembangkan dan memeriksa fitur API portofolio. Bantuan yang digunakan mencakup implementasi endpoint daftar, detail, dan star untuk proyek serta pengalaman; penerapan autentikasi sesi, izin berdasarkan peran, validasi serializer, dan pencarian melalui parameter query. AI juga membantu menghubungkan halaman Projects dan Experiences ke API menggunakan `fetch()` tanpa memuat ulang halaman, termasuk penanganan CSRF, pesan kesalahan melalui toast, serta rendering teks secara aman.
 
 AI turut membantu menyusun dan memperbaiki pengujian API untuk izin tiap peran, validasi, star, dan CSRF, serta menyesuaikan tata letak responsif dan tampilan kolom pencarian agar sesuai dengan tema website. Perubahan yang dihasilkan disesuaikan dengan struktur proyek dan diuji menggunakan test suite Django.
+
+Untuk sesi pengerjaan ini, AI yang digunakan adalah OpenAI Codex di IDE. Strategi prompt yang digunakan adalah memberikan rubrik atau kebutuhan fitur secara eksplisit, meminta pemeriksaan file yang sudah ada, lalu mengarahkan perbaikan berdasarkan temuan, hasil test, dan screenshot UI. Bagian yang dibantu mencakup endpoint API, permission, integrasi JavaScript, test, dokumentasi reflektif, dan CSS responsif. Saya memeriksa hasil terhadap struktur aplikasi, memperbaiki test yang memakai URL lama, menyesuaikan penjelasan `PUT`/`PATCH` dengan perilaku endpoint, dan menambahkan test untuk skenario yang terlewat.
+
+Ringkasan log prompting:
+
+- Meminta implementasi permission portfolio owner/Editor/read-only dan endpoint pengalaman dengan serializer.
+- Meminta API function-based dengan session authentication, pencarian `q`, status HTTP yang sesuai, dan registrasi di `/api/v1/`.
+- Meminta integrasi halaman Projects dan Experiences melalui `fetch()`, termasuk CSRF, toast, dan operasi tanpa reload.
+- Meminta pengujian peran, validasi, star, CSRF, lalu audit bug dan perbaikan responsivitas berdasarkan screenshot.
+
+AI dapat salah memahami konteks atau menghasilkan perubahan yang belum sesuai dengan implementasi aktual. Karena itu, saran AI tidak dianggap benar tanpa pemeriksaan; perubahan API diverifikasi dengan test suite, sedangkan tampilan tetap perlu diperiksa di browser pada ukuran layar yang berbeda. Ringkasan interaksi AI pada tugas ini: (1) implementasi dan integrasi API pengalaman/proyek, (2) penambahan test role, validasi, star, dan CSRF, (3) audit dan perbaikan test serta dokumentasi, dan (4) iterasi tampilan search berdasarkan screenshot. Prompt lengkap tersedia pada riwayat percakapan Codex untuk sesi pengerjaan ini.
 
